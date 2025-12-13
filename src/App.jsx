@@ -362,10 +362,14 @@ function App() {
           { icon: "/assets/svg/bannericon-1.svg", label: "Family-Owned" },
           { icon: "/assets/svg/bannericon-3.svg", label: "Licensed & Insured" },
           { icon: "/assets/svg/bannericon-4.svg", label: "Serving Suffolk & Nassau County" },
-        ].map((item) => (
-          <div key={item.label} className="p-1 flex justify-start items-center gap-2">
-            <img src={item.icon} alt="" className="w-5 sm:w-8" />
-            <p className="font-bold max-sm:text-center fontMont text-xs sm:text-sm">{item.label}</p>
+        ].map((item, idx) => (
+          <div
+            key={item.label}
+            className="info-icon fade-heading"
+            style={{ animationDelay: `${idx * 0.15}s` }}
+          >
+            <img src={item.icon} alt={item.label} className="mx-auto mb-2 h-8 w-8" />
+            <span className="font-bold fontMont text-black text-[0.7rem]">{item.label}</span>
           </div>
         ))}
       </div>
