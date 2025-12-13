@@ -17,9 +17,10 @@
   "license": "MIT",
   "dependencies": {
     "react": "^19.2.3",
-    "react-dom": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "devDependencies": {
     "vite": "^7.2.7",
     "@vitejs/plugin-react": "^5.1.2"
-  },
-  "devDependencies": {}
+  }
 }
