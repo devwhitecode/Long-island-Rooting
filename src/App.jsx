@@ -227,7 +227,7 @@ function App() {
   );
 
   return (
-    <div className="main p-2 pb-0">
+    <div className="main px-0 sm:px-2 pt-2 pb-0">
       <div
       id="mobileMenu"
         className={`fixed inset-0 h-full w-full bg-black text-white z-[99999] translate-x-full transition-transform duration-300 md:hidden p-6 ${
@@ -318,7 +318,7 @@ function App() {
         </button>
       </header>
 
-      <div className="hero fade-section bg-no-repeat bg-contain sm:bg-cover bg-top sm:bg-top-left flex-col sm:flex-row w-full min-h-screen pt-28 sm:pt-52 pb-6 sm:pb-16 flex justify-between items-center gap-6 px-2 sm:px-6 relative">
+      <div className="hero fade-section bg-no-repeat bg-contain sm:bg-cover bg-top sm:bg-top-left flex-col sm:flex-row w-full min-h-screen pt-28 sm:pt-52 pb-6 sm:pb-16 flex justify-between items-center gap-6 px-0 sm:px-6 relative">
         <div className="w-fit flex flex-col justify-start items-start gap-4 sm:pl-8">
           <h1 className="text-5xl fontNF text-white leading-[1.2] hidden sm:block fade-heading">
             RESIDENTIAL <span className="font-extrabold">&</span><br />
