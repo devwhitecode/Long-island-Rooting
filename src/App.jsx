@@ -124,7 +124,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const elements = document.querySelectorAll(".fade-section");
+    const elements = document.querySelectorAll(".fade-section, .fade-heading");
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -308,14 +308,14 @@ function App() {
 
       <div className="hero fade-section bg-no-repeat bg-contain sm:bg-cover bg-top sm:bg-top-left flex-col sm:flex-row w-full min-h-screen pt-28 sm:pt-52 pb-6 sm:pb-16 flex justify-between items-center gap-6 px-2 sm:px-6 relative">
         <div className="w-fit flex flex-col justify-start items-start gap-4 sm:pl-8">
-          <h1 className="text-5xl fontNF text-white leading-[1.2] hidden sm:block">
+          <h1 className="text-5xl fontNF text-white leading-[1.2] hidden sm:block fade-heading">
             RESIDENTIAL <span className="font-extrabold">&</span><br />
             COMMERCIAL <br />
             <span className="text-[#7FFF00]">ROOFING</span> <br />
             <span className="text-[#7FFF00]">EXPERTS</span> <br />
             YOU CAN <span className="text-[#7FFF00]">TRUST</span>
           </h1>
-          <h1 className="text-[2rem] fontNF text-white leading-[1.2] sm:hidden text-center">
+          <h1 className="text-[2rem] fontNF text-white leading-[1.2] sm:hidden text-center fade-heading">
             RESIDENTIAL <span className="font-extrabold">&</span>COMMERCIAL
             <span className="text-[#7FFF00]">ROOFING</span>
             <span className="text-[#7FFF00]">EXPERTS</span> YOU CAN

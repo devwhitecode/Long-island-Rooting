@@ -116,6 +116,17 @@ input[type="number"] {
       transform: translateY(0);
     }
 
+    .fade-heading {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .fade-heading.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
     .swiper-pagination {
       width: 100%;
       display: flex;
