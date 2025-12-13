@@ -600,7 +600,7 @@ function App() {
         </div>
       )}
 
-      <div className="w-full min-h-scree flex flex-col gap-12 py-6 pb-12 fade-section">
+      <div className="w-full min-h-screen flex flex-col gap-12 py-6 pb-12 fade-section">
         <h2 className="text-[#7FFF00] fontNF text-2xl sm:text-4xl text-center hero-heading-shadow">WHAT OUR CLIENTS SAY</h2>
         <div className="w-full flex flex-col sm:flex-row justify-between gap-6 items-center">
           {[
@@ -708,12 +708,12 @@ function App() {
                 />
                 <input
                   className="w-full sm:w-[30%] outline-none border bg-transparent border-transparent text-white border-b-[#7FFF00] py-2 placeholder:fontMont placeholder:text-white placeholder:font-light placeholder:italic"
-                  type="text"
+                  type="number"
                   placeholder="Phone Number"
                 />
                 <input
                   className="w-full sm:w-[30%] outline-none border bg-transparent border-transparent text-white border-b-[#7FFF00] py-2 placeholder:fontMont placeholder:text-white placeholder:font-light placeholder:italic"
-                  type="text"
+                  type="email"
                   placeholder="Email"
                 />
               </div>
