@@ -61,6 +61,7 @@ function App() {
   const quoteTimerRef = useRef(null);
   const [showModalQuote, setShowModalQuote] = useState(false);
   const [quoteActive, setQuoteActive] = useState(false);
+  const [navHidden, setNavHidden] = useState(false);
 
   useEffect(() => {
     let swiperInstance;
@@ -194,6 +195,22 @@ function App() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const shouldHide = window.scrollY > 80;
+      setNavHidden((prev) => (prev !== shouldHide ? shouldHide : prev));
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      setNavHidden(false);
+    }
+  }, [mobileMenuOpen]);
 
   useEffect(() => {
     if (showModalQuote) {
@@ -350,7 +367,11 @@ function App() {
         </ul>
       </div>
 
-      <header className="w-full flex justify-between items-center fixed top-0 left-0 right-0 px-6 py-3 pt-7 z-[9999]">
+      <header
+        className={`w-full flex justify-between items-center fixed top-0 left-0 right-0 px-6 py-3 pt-7 z-[9999] transition-transform duration-300 ${
+          navHidden ? "-translate-y-full" : "translate-y-0"
+        }`}
+      >
         <img src="/assets/images/logo.png" alt="Long Island Construction Plus+" className="w-32 sm:w-52" />
         <div className="hidden sm:flex justtify-start items-center gap-8">
           <div className="navMenu flex justify-start items-center gap-8">
