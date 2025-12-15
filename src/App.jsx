@@ -377,7 +377,7 @@ function App() {
   };
 
   return (
-    <div className="main px-0 sm:px-2 pt-2 pb-0">
+    <div className="main px-0 sm:px-2 pt-0 pb-0">
       <div
       id="mobileMenu"
         className={`fixed inset-0 h-full w-full bg-black text-white z-[99999] translate-x-full transition-transform duration-300 md:hidden p-6 ${
@@ -472,8 +472,8 @@ function App() {
         </button>
       </header>
 
-      <div className="hero fade-section bg-no-repeat bg-contain sm:bg-cover bg-top sm:bg-top-left flex-col sm:flex-row w-full min-h-screen pt-28 sm:pt-52 pb-6 sm:pb-16 flex justify-between items-center gap-6 px-0 sm:px-6 relative">
-        <div className="w-fit flex flex-col justify-start items-start gap-4 sm:pl-8">
+      <div className="hero fade-section bg-no-repeat bg-cover bg-center sm:bg-cover sm:bg-top-left flex-col sm:flex-row w-full min-h-screen pt-24 sm:pt-52 pb-6 sm:pb-16 flex justify-between items-center gap-6 px-4 sm:px-6 relative">
+        <div className="w-full sm:w-fit flex flex-col justify-start items-start gap-4 sm:pl-8">
           <h1 className="text-5xl fontNF text-white leading-[1.2] hidden sm:block fade-heading reveal-from-left">
             RESIDENTIAL <span className="font-extrabold">&</span><br />
             COMMERCIAL <br />
@@ -481,7 +481,7 @@ function App() {
             <span className="text-[#7FFF00]">EXPERTS</span> <br />
             YOU CAN <span className="text-[#7FFF00]">TRUST</span>
           </h1>
-          <h1 className="text-[2rem] fontNF text-white leading-[49px] align-middle sm:hidden text-center fade-heading reveal-from-right hero-mobile-heading">
+          <h1 className="text-[clamp(1.35rem,6vw,1.9rem)] fontNF text-white leading-[1.08] align-middle sm:hidden text-left fade-heading reveal-from-right hero-mobile-heading tracking-tight max-w-[18ch]">
             RESIDENTIAL <span className="font-extrabold">&</span>COMMERCIAL
             <span className="text-[#7FFF00]">ROOFING</span>
             <span className="text-[#7FFF00]">EXPERTS</span> YOU CAN
@@ -510,7 +510,7 @@ function App() {
         </div>
       </div>
 
-      <div className="w-full grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 px-4 py-10">
+      <div className="w-full grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 px-4 py-10">
         {[
           { icon: "/assets/svg/bannericon-1.svg", label: "SINCE 2012" },
           { icon: "/assets/svg/bannericon-1.svg", label: "Family-Owned" },
@@ -519,11 +519,13 @@ function App() {
         ].map((item, idx) => (
           <div
             key={item.label}
-            className="info-icon fade-heading pop-in"
+            className="info-icon reveal-from-bottom pop-in"
             style={{ animationDelay: `${idx * 0.15}s` }}
           >
-            <img src={item.icon} alt={item.label} className="mx-auto mb-2 h-8 w-8" />
-            <span className="font-bold fontMont text-black text-[0.7rem]">{item.label}</span>
+            <div className="info-icon-circle">
+              <img src={item.icon} alt={item.label} className="h-7 w-7 sm:h-8 sm:w-8" />
+            </div>
+            <p className="info-icon-title fontMont">{item.label}</p>
           </div>
         ))}
       </div>
@@ -611,7 +613,7 @@ function App() {
       </div>
 
       <div
-        className="section4 fade-section scroll-reveal h-fit w-full relative px-10 items-start sm:flex mt-4 sm:mt-10 xl:pb-10"
+        className="section4 fade-section scroll-reveal h-fit w-full relative px-10 items-start sm:flex mt-4 sm:mt-10 xl:pb-10 overflow-hidden"
         id="why-us"
       >
         <div className="w-full sm:w-[55%] h-full flex gap-2 flex-col items-center sm:items-start py-8">
