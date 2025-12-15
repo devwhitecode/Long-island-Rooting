@@ -154,6 +154,39 @@ input[type="number"] {
       transition: transform 0.3s ease;
     }
 
+    .accordion-item {
+      background: linear-gradient(135deg, #ffffff 0%, #fafcff 100%);
+    }
+
+    .accordion-button {
+      position: relative;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .accordion-button:active {
+      transform: scale(0.99);
+    }
+
+    .accordion-content {
+      will-change: max-height, opacity;
+    }
+
+    .accordion-chevron {
+      will-change: transform;
+    }
+
+    @media (max-width: 640px) {
+      .accordion-button {
+        padding: 1rem;
+        gap: 0.75rem;
+      }
+
+      .accordion-content {
+        font-size: 0.875rem;
+      }
+    }
+
     .swiper-pagination {
       width: 100%;
       display: flex;
@@ -205,6 +238,129 @@ input[type="number"] {
     .slide-copy {
       font-size: 0.75rem;
       letter-spacing: 0.05em;
+    }
+
+    /* New Projects Carousel Styles */
+    .projects-carousel {
+      -webkit-mask-image: linear-gradient(
+        to right,
+        transparent 0%,
+        black 5%,
+        black 95%,
+        transparent 100%
+      );
+      mask-image: linear-gradient(
+        to right,
+        transparent 0%,
+        black 5%,
+        black 95%,
+        transparent 100%
+      );
+    }
+
+    .project-card {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      border-radius: 20px;
+      background: #fff;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid rgba(204, 229, 255, 0.3);
+    }
+
+    .project-card:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 12px 40px rgba(0, 127, 255, 0.15);
+      border-color: rgba(127, 255, 0, 0.4);
+    }
+
+    .project-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .project-card:hover .project-img {
+      transform: scale(1.08);
+    }
+
+    .project-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0.03) 50%,
+        rgba(0, 127, 255, 0.08) 100%
+      );
+      opacity: 0.6;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+
+    .project-card:hover .project-overlay {
+      opacity: 0.3;
+    }
+
+    /* Swiper customization for projects */
+    .projects-carousel .swiper-slide {
+      opacity: 1;
+      transform: none;
+      height: 100%;
+    }
+
+    .projects-carousel .swiper-wrapper {
+      transition-timing-function: linear !important;
+    }
+
+    @media (max-width: 640px) {
+      .projects-carousel {
+        -webkit-mask-image: linear-gradient(
+          to right,
+          transparent 0%,
+          black 8%,
+          black 92%,
+          transparent 100%
+        );
+        mask-image: linear-gradient(
+          to right,
+          transparent 0%,
+          black 8%,
+          black 92%,
+          transparent 100%
+        );
+      }
+
+      .project-card {
+        border-radius: 18px;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+        border: 1.5px solid rgba(204, 229, 255, 0.4);
+      }
+
+      .project-img {
+        object-position: center center;
+      }
+
+      .project-overlay {
+        background: linear-gradient(
+          180deg,
+          rgba(0, 0, 0, 0) 0%,
+          rgba(0, 0, 0, 0.02) 50%,
+          rgba(0, 127, 255, 0.06) 100%
+        );
+        opacity: 0.5;
+      }
+
+      .projects-carousel .swiper-slide {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
     }
 
     .swiper-slide img {

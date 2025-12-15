@@ -73,25 +73,30 @@ function App() {
       if (window.Swiper) {
         const isMobile = window.matchMedia("(max-width: 639px)").matches;
         swiperInstance = new window.Swiper(".mySwiper", {
-          slidesPerView: 1,
-          spaceBetween: 20,
+          slidesPerView: isMobile ? 1.15 : 3.5,
+          spaceBetween: isMobile ? 12 : 24,
+          centeredSlides: isMobile,
           loop: true,
-          speed: 1200,
-          autoplay: isMobile
-            ? false
-            : {
-                delay: 3000,
-                disableOnInteraction: false,
-              },
+          speed: isMobile ? 6000 : 8000,
+          autoplay: {
+            delay: 0,
+            disableOnInteraction: false,
+            pauseOnMouseEnter: !isMobile,
+          },
+          freeMode: true,
+          freeModeMomentum: false,
+          grabCursor: true,
           breakpoints: {
             640: {
-              slidesPerView: 3,
-              spaceBetween: 30,
+              slidesPerView: 2.5,
+              spaceBetween: 20,
+              centeredSlides: false,
             },
-          },
-          pagination: {
-            el: ".swiper-pagination",
-            clickable: true,
+            1024: {
+              slidesPerView: 3.5,
+              spaceBetween: 24,
+              centeredSlides: false,
+            },
           },
         });
       }
@@ -577,33 +582,46 @@ function App() {
                 return (
                   <div
                     key={service.title}
-                    className="flex flex-col gap-2 rounded-[30px] bg-gradient-to-r from-white to-[#f0f9ff] p-1 shadow-[0_8px_20px_rgba(0,0,0,0.1)]"
+                    className="accordion-item overflow-hidden rounded-3xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300"
                   >
                     <button
                       type="button"
                       onClick={() => setOpenService(isOpen ? null : serviceIndex)}
-                      className={`w-full flex items-center gap-4 bg-[#CCE5FF] px-6 py-4 rounded-[28px] transition-all ${
-                        isOpen ? "shadow-[0_12px_30px_rgba(0,0,0,0.25)]" : "hover:translate-y-[-2px]"
-                      }`}
+                      className="accordion-button w-full flex items-center gap-4 px-5 sm:px-6 py-4 sm:py-5 text-left transition-all duration-300 hover:bg-[#f8fbff] group"
                       aria-expanded={isOpen}
+                      aria-label={`Toggle ${service.title}`}
                     >
-                      <span className="p-3 rounded-full bg-white shadow-inner">
+                      <span className="flex-shrink-0 p-2.5 sm:p-3 rounded-full bg-gradient-to-br from-[#CCE5FF] to-[#e8f4ff] shadow-sm group-hover:shadow-md transition-shadow duration-300">
                         <img src={service.icon} alt="" className="h-5 w-5 sm:h-6 sm:w-6" />
                       </span>
-                      <span className="flex-1 text-left text-sm font-bold uppercase text-black sm:text-base">
+                      <span className="flex-1 text-sm sm:text-base font-bold text-black fontMont tracking-tight">
                         {service.title}
                       </span>
-                      <span
-                        className={`accordion-indicator text-xl font-bold ${isOpen ? "rotate-45" : ""}`}
+                      <svg
+                        className={`accordion-chevron flex-shrink-0 w-5 h-5 text-[#007FFF] transition-transform duration-300 ease-in-out ${
+                          isOpen ? "rotate-180" : "rotate-0"
+                        }`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2.5}
                       >
-                        {isOpen ? "×" : "+"}
-                      </span>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
                     </button>
-                    {isOpen && (
-                      <p className="px-6 pb-4 text-xs font-normal uppercase leading-relaxed text-[#0c1623]">
-                        {service.detail}
-                      </p>
-                    )}
+                    <div
+                      className={`accordion-content overflow-hidden transition-all duration-300 ease-in-out ${
+                        isOpen ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+                      }`}
+                    >
+                      <div className="px-5 sm:px-6 pb-4 sm:pb-5 pt-1">
+                        <div className="pl-0 sm:pl-12 border-l-0 sm:border-l-2 border-[#CCE5FF]">
+                          <p className="text-sm sm:text-base fontMont font-normal leading-relaxed text-gray-700">
+                            {service.detail}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 );
               })}
@@ -667,11 +685,11 @@ function App() {
       </div>
 
       <div
-        className="w-full min-h-fit sm:min-h-screen py-8 pb-20 sm:pb-12 flex flex-col gap-12 fade-section scroll-reveal-left"
+        className="w-full min-h-fit py-12 sm:py-16 pb-16 sm:pb-20 flex flex-col gap-8 sm:gap-12 fade-section scroll-reveal-left"
         id="recent-projects"
       >
         <div className="flex flex-col sm:flex-row justify-between items-center sm:items-start sm:px-10 max-sm:gap-4">
-        <h2 className="text-[#7FFF00] fontNF text-2xl sm:text-4xl text-center hero-heading-shadow reveal-from-left">OUR RECENT PROJECTS</h2>
+          <h2 className="text-[#7FFF00] fontNF text-2xl sm:text-4xl text-center hero-heading-shadow reveal-from-left">OUR RECENT PROJECTS</h2>
           <p className="text-lg fontMont font-normal w-1/2 hidden sm:block reveal-from-right">
             Take a look at our latest roofing, siding, and exterior work across Long Island. Each project reflects our dedication to quality and customer satisfaction.
           </p>
@@ -679,33 +697,40 @@ function App() {
             Take a look at our latest roofing, siding, and exterior work across Long Island. Each project reflects our dedication to quality and customer satisfaction.
           </p>
         </div>
-        <div className="crousal w-full h-[50dvh] sm:h-[60dvh] relative reveal-from-bottom">
-          <div className="swiper mySwiper relative">
-          <div className="swiper-wrapper">
-            {[
-              "/assets/images/sliderimage-4.png",
-              "/assets/images/sliderImage-2.png",
-              "/assets/images/sliderimage-3.png",
-              "/assets/images/sliderimage-4.png",
-              "/assets/images/sliderImage-2.png",
-            ].map((src, idx) => (
-              <div
-                key={src + idx}
-                className="swiper-slide !w-full sm:!w-1/4 rounded-[28px] overflow-hidden scroll-animate"
-              >
-                <div className="slide-card">
-                  <img src={src} alt={`Project ${idx + 1}`} className="slide-img" />
-                  <div className="slide-overlay">
-                    <p className="slide-badge">Project {idx + 1}</p>
-                    <h3 className="slide-title">Premium Roofing</h3>
-                    <p className="slide-copy">Modern exteriors, lasting craftsmanship.</p>
+        <div className="projects-carousel w-full h-[350px] sm:h-[400px] lg:h-[480px] relative reveal-from-bottom overflow-hidden px-4 sm:px-0">
+          <div className="swiper mySwiper relative h-full">
+            <div className="swiper-wrapper">
+              {[
+                "https://lh3.googleusercontent.com/gps-cs-s/AG0ilSy9W99N9yFvNa-TFHz-IYx-MrLBJNass1ZJCC95of_72lM7gAf9MbWKTjwlX6vhmofg2GurOLmiypPZRSI1Drlc65V9a2GIvo_HDPsmfbB_9ZNqiHeSEqMDd_8zJOnjv3_4Q3qWc4b1Oh8=s680-w680-h510-rw",
+                "https://lh3.googleusercontent.com/p/AF1QipMf_zLiMRXDmKuZrMCW2qK1w96qfVXkElj-U7Tg=s680-w680-h510-rw",
+                "https://lh3.googleusercontent.com/p/AF1QipPnzDMn1DmXB2cN8t-d-WA3SwmNMcNf1Db8kfz5=s680-w680-h510-rw",
+                "https://lh3.googleusercontent.com/gps-cs-s/AG0ilSyUUbdQtTQhS7bpWME8ORL58UD7q8yk52hG9X1MaRwOV-BslgfASIGLWRFfpNfizrbr7tH8qjb376_zSBht0gH9TiWYG55ThkaCmSUtIQEh84g00E-bzLHMijFBxX_Q_I4OZQQC9Q=s680-w680-h510-rw",
+                "https://lh3.googleusercontent.com/p/AF1QipPLHRYbvEx-yKbwMZXCmc3Brem_QFih0Plfq-Bp=s680-w680-h510-rw",
+                "https://lh3.googleusercontent.com/p/AF1QipNafK3G_UJae-8823LLYQ83obbieGrT4iy3Cq_q=s680-w680-h510-rw",
+                "https://lh3.googleusercontent.com/p/AF1QipM63VtAPsHhayfgiy_NEB3s-cEXO1zoC2OBTZI2=s680-w680-h510-rw",
+                "https://lh3.googleusercontent.com/p/AF1QipMh08n3FIVLjV6VlEgzLfnSEaisY1R0Xxo-qnxP=s680-w680-h510-rw",
+                "https://lh3.googleusercontent.com/p/AF1QipPki_s9qO8zo3CKhVhg_2zRSzC9xd_QZV8lzcy8=s680-w680-h510-rw",
+                "https://lh3.googleusercontent.com/p/AF1QipMttlS5SPTPvaNt9i57hC7F5Jzk7Vck3w_cgPv6=s680-w680-h510-rw",
+                "https://lh3.googleusercontent.com/p/AF1QipM28ua4X8rYN7kU5FxwikoAGgWpkrHUD68mvMnr=s680-w680-h510-rw",
+                "https://lh3.googleusercontent.com/p/AF1QipOk-kfvY4EG8KLXRP30mIh0EHE49uJWgJTNwLXV=s680-w680-h510-rw",
+              ].map((src, idx) => (
+                <div
+                  key={src + idx}
+                  className="swiper-slide !h-full"
+                >
+                  <div className="project-card group">
+                    <img 
+                      src={src} 
+                      alt={`Construction project ${idx + 1}`} 
+                      className="project-img"
+                      loading="lazy"
+                    />
+                    <div className="project-overlay"></div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-          </div>
-          <div className="swiper-pagination absolute !-bottom-10 !left-0"></div>
         </div>
       </div>
 
