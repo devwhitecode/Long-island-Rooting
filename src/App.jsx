@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 const navLinks = [
-  { label: "Home", href: "#" },
+  { label: "Home", href: "#home" },
   { label: "Our Recent Projects", href: "#recent-projects" },
   { label: "Our Services", href: "#services" },
   { label: "Why Choose", href: "#why-us" },
@@ -295,6 +295,21 @@ function App() {
     flashQuoteActive();
   };
 
+  const handleSmoothScroll = (e, targetId) => {
+    e.preventDefault();
+    setMobileMenuOpen(false);
+    
+    const target = document.querySelector(targetId);
+    if (target) {
+      setTimeout(() => {
+        target.scrollIntoView({ 
+          behavior: "smooth",
+          block: "start"
+        });
+      }, 100);
+    }
+  };
+
   const handleQuoteSubmit = (event, options = {}) => {
     event.preventDefault();
     const { closeModal = false, formKey = "hero" } = options;
@@ -309,8 +324,10 @@ function App() {
 
   const handleFooterSubmit = (event) => {
     event.preventDefault();
+    const formElement = event.target;
+    setQuoteStatus((prev) => ({ ...prev, footer: true }));
+    formElement.reset();
     flashQuoteActive();
-    // Placeholder: handle footer form data submission here.
   };
 
   const renderQuoteForm = (variant = "hero") => {
@@ -403,7 +420,7 @@ function App() {
               <a
                 href={item.href}
                 className="hover:text-[#7CFF00]"
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={(e) => handleSmoothScroll(e, item.href)}
               >
                 {item.label}
               </a>
@@ -451,6 +468,7 @@ function App() {
               <a
                 key={item.label}
                 href={item.href}
+                onClick={(e) => handleSmoothScroll(e, item.href)}
                 className="fontMont font-normal text-base hover:text-[#7FFF00] border border-transparent hover:border-b-[#7FFF00] duration-200 ease-in"
               >
                 {item.label}
@@ -477,7 +495,7 @@ function App() {
         </button>
       </header>
 
-      <div className="hero fade-section bg-no-repeat bg-cover bg-center sm:bg-cover sm:bg-top-left flex-col sm:flex-row w-full min-h-screen pt-24 sm:pt-52 pb-6 sm:pb-16 flex justify-between items-center gap-6 px-4 sm:px-6 relative">
+      <div id="home" className="hero fade-section bg-no-repeat bg-cover bg-center sm:bg-cover sm:bg-top-left flex-col sm:flex-row w-full min-h-screen pt-24 sm:pt-52 pb-6 sm:pb-16 flex justify-between items-center gap-6 px-4 sm:px-6 relative">
         <div className="w-full sm:w-fit flex flex-col justify-start items-start gap-4 sm:pl-8">
           <h1 className="text-5xl fontNF text-white leading-[1.2] hidden sm:block fade-heading reveal-from-left">
             RESIDENTIAL <span className="font-extrabold">&</span><br />
@@ -850,104 +868,198 @@ function App() {
         </button>
       </div>
 
-      <div
-        className="w-full flex flex-col justify-start items-center rounded-3xl gap-8 text-white py-10"
+      <div 
+        className="w-full py-16 sm:py-20 px-4 sm:px-6 fade-section scroll-reveal relative overflow-hidden"
         style={{
           backgroundImage: "url('/assets/images/footerBeforeBanner.png')",
-          backgroundPosition: "bottom",
+          backgroundPosition: "bottom center",
+          backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
         }}
       >
-        <h2 className="text-2xl sm:text-4xl fontNF text-center reveal-from-bottom">
-          READY TO GET <span className="text-[#7FFF00]">STARTED?</span>
-        </h2>
-        <p className="text-lg fontMont font-light w-1/2 hidden sm:block text-center reveal-from-bottom">
-          Contact our expert roofing team today and ask for your <span className="font-semibold text-[#7FFF00]">FREE ESTIMATE.</span> <br />
-          We'll respond quickly to schedule your on-site inspection.
-        </p>
-        <p className="text-sm fontMont font-normal sm:hidden text-center reveal-from-bottom">
-          Take a look at our latest roofing, siding, and exterior work across Long Island. Each project reflects our dedication to quality and customer satisfaction.
-        </p>
-        <div className="w-full flex gap-6 flex-col sm:flex-row justify-center items-center">
-          <button className="fontMont text-black font-bold text-sm sm:text-base rounded-xl px-6 py-3 flex justify-center items-center gap-2 bg-[#7FFF00] hover:bg-black duration-200 ease-in hover:text-[#7FFF00] mt-4 pop-in">
-            Request Your Free Estimate
-            <span className="w-7 h-7 p-2 bg-black flex justify-center rounded-full items-center">
-              <img src="/assets/svg/arrow.svg" alt="" className="w-full h-full object-contain" />
-            </span>
-          </button>
-          <button className="fontMont text-white font-bold text-sm sm:text-base rounded-xl px-6 py-3 flex justify-center items-center gap-2 bg-transparent hover:bg-[#ffffff] duration-200 ease-in hover:text-black mt-4 border border-[#7FFF00] hover:border-transparent pop-in">
-            Call Now: (631) 484-0098
-            <span className="w-7 h-7 p-2 bg-black flex justify-center rounded-full items-center">
-              <img src="/assets/svg/arrow.svg" alt="" className="w-full h-full object-contain" />
-            </span>
-          </button>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/40 to-black/50" />
+        
+        <div className="relative max-w-5xl mx-auto">
+          <div className="cta-section-card bg-white/95 backdrop-blur-sm rounded-3xl p-8 sm:p-12 border border-white/40 shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
+            <div className="flex flex-col items-center gap-6 sm:gap-8 text-center">
+              <div className="flex flex-col gap-3 reveal-from-bottom">
+                <h2 className="fontNF text-3xl sm:text-5xl lg:text-6xl font-black text-black leading-tight">
+                  READY TO GET <span className="text-[#7FFF00] drop-shadow-[0_2px_8px_rgba(127,255,0,0.5)]">STARTED?</span>
+                </h2>
+                <div className="w-24 h-1 bg-gradient-to-r from-[#007FFF] to-[#7FFF00] rounded-full mx-auto" />
+              </div>
+              
+              <p className="fontMont text-base sm:text-lg text-gray-800 max-w-2xl leading-relaxed reveal-from-bottom">
+                Contact our expert roofing team today for your <span className="font-bold text-[#007FFF]">FREE ESTIMATE.</span>
+                <br className="hidden sm:block" />
+                We'll respond quickly to schedule your on-site inspection and provide honest, competitive pricing.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full sm:w-auto mt-4 reveal-from-bottom">
+                <button 
+                  onClick={handleQuoteScroll}
+                  className="group fontMont text-black font-bold text-base sm:text-lg rounded-2xl px-8 py-4 flex justify-center items-center gap-3 bg-gradient-to-r from-[#7FFF00] to-[#55d500] hover:from-[#6ffb00] hover:to-[#72f201] transition-all duration-300 shadow-[0_10px_30px_rgba(127,255,0,0.3)] hover:shadow-[0_15px_40px_rgba(127,255,0,0.45)] hover:scale-105 relative overflow-hidden"
+                >
+                  <span className="relative z-10">Get Your Free Estimate</span>
+                  <span className="relative z-10 w-8 h-8 p-2 bg-black/90 flex justify-center rounded-full items-center group-hover:rotate-45 transition-transform duration-300">
+                    <svg className="w-full h-full" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" className="stroke-[#7FFF00]" />
+                    </svg>
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </button>
+
+                <a 
+                  href="tel:+16314840098"
+                  className="group fontMont text-[#007FFF] font-bold text-base sm:text-lg rounded-2xl px-8 py-4 flex justify-center items-center gap-3 bg-white hover:bg-[#007FFF] border-2 border-[#007FFF] hover:border-[#007FFF] transition-all duration-300 shadow-md hover:shadow-xl hover:text-white hover:scale-105"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                  <span className="relative z-10">Call: (631) 484-0098</span>
+                </a>
+              </div>
+
+              <div className="flex flex-wrap justify-center gap-6 sm:gap-8 mt-6 pt-6 border-t border-gray-300 w-full reveal-from-bottom">
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-[#7FFF00]" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="fontMont text-sm sm:text-base text-gray-700 font-medium">Free Estimates</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-[#7FFF00]" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="fontMont text-sm sm:text-base text-gray-700 font-medium">Licensed & Insured</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-[#7FFF00]" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="fontMont text-sm sm:text-base text-gray-700 font-medium">Fast Response</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="flex flex-col mt-8">
         <div className="footer bg-[#007FFF] flex sm:flex-row flex-col w-full justify-between rounded-tr-3xl rounded-tl-3xl pt-8 px-4 sm:px-10">
-          <div className="flex flex-col gap-1 w-full sm:w-[30%] text-white fontMont text-sm py-6">
-            <img className="w-[80%] pb-8" src="/assets/images/logo.png" alt="" />
+          <div className="flex flex-col gap-3 w-full sm:w-[30%] text-white fontMont text-sm py-6">
+            <img className="w-[80%] pb-6" src="/assets/images/logo.png" alt="Long Island Construction Plus+" />
             {[
-              { icon: "/assets/svg/phone.svg", label: "(631) 484-0098" },
-              { icon: "/assets/svg/map.svg", label: "Serving Suffolk County & Nassau County" },
-              { icon: "/assets/svg/email.svg", label: "liconstructionplus@gmail.com" },
-              { icon: "/assets/svg/time.svg", label: "Monday – Saturday | 8:00 AM – 6:00 PM" },
+              { icon: "/assets/svg/phone.svg", label: "(631) 484-0098", type: "phone" },
+              { icon: "/assets/svg/map.svg", label: "Serving Suffolk County & Nassau County", type: "text" },
+              { icon: "/assets/svg/email.svg", label: "liconstructionplus@gmail.com", type: "email" },
+              { icon: "/assets/svg/time.svg", label: "Monday – Saturday | 8:00 AM – 6:00 PM", type: "text" },
             ].map((item) => (
-              <div key={item.label} className="flex gap-4">
-                <img src={item.icon} alt="" />
-                <h1>{item.label}</h1>
+              <div key={item.label} className="flex gap-3 items-start">
+                <img src={item.icon} alt="" className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                {item.type === "phone" ? (
+                  <a 
+                    href="tel:+16314840098" 
+                    className="hover:text-[#7FFF00] transition-colors duration-200 font-normal"
+                  >
+                    {item.label}
+                  </a>
+                ) : item.type === "email" ? (
+                  <a 
+                    href={`mailto:${item.label}`}
+                    className="hover:text-[#7FFF00] transition-colors duration-200 font-normal"
+                  >
+                    {item.label}
+                  </a>
+                ) : (
+                  <span className="font-normal">{item.label}</span>
+                )}
               </div>
             ))}
           </div>
-          <div className="w-full sm:w-[20%] text-white fontMont text-sm flex flex-col gap-3 capitalize sm:pl-10 py-6">
-            <h1 className="uppercase font-black text-2xl sm:text-base">Quick links</h1>
-            {["Home", "About us", "Our services", "Why Choose us", "get a Quote"].map((link) => (
-              <p key={link} className="text-sm sm:text-base">
-                {link}
+          <div className="w-full sm:w-[20%] text-white fontMont text-sm flex flex-col gap-3 sm:pl-10 py-6">
+            <h2 className="uppercase font-black text-lg sm:text-base mb-1">Quick Links</h2>
+            {[
+              { label: "Home", href: "#home" },
+              { label: "About Us", href: "#why-us" },
+              { label: "Our Services", href: "#services" },
+              { label: "Why Choose Us", href: "#why-us" },
+              { label: "Get a Quote", onClick: handleQuoteScroll },
+            ].map((link) => (
+              link.onClick ? (
+                <button
+                  key={link.label}
+                  onClick={link.onClick}
+                  className="text-sm sm:text-base font-normal hover:text-[#7FFF00] transition-colors duration-200 text-left"
+                >
+                  {link.label}
+                </button>
+              ) : (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  onClick={(e) => handleSmoothScroll(e, link.href)}
+                  className="text-sm sm:text-base font-normal hover:text-[#7FFF00] transition-colors duration-200"
+                >
+                  {link.label}
+                </a>
+              )
+            ))}
+          </div>
+          <div className="w-full sm:w-[45%] flex flex-col items-start justify-start py-6">
+            <div className="w-full bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+              <h2 className="fontNF text-lg sm:text-xl uppercase text-white font-black leading-tight mb-2">
+                Request Your Free Estimate Today!
+              </h2>
+              <p className="text-xs sm:text-sm text-white/90 fontMont mb-6">
+                Get a no-obligation quote from our expert roofing and siding team. Fast, reliable, and trusted by homeowners across Long Island.
               </p>
-            ))}
-          </div>
-          <div className="w-full sm:w-1/2 flex flex-col max-sm:px-2 items-start justify-start py-6 max-sm:border max-sm:border-white max-sm:rounded-2xl">
-            <h1 className="fontNF text-sm sm:text-lg uppercase text-white font-black leading-none max-sm:text-center">
-              Request Your Free Estimate Today!
-            </h1>
-            <p className="text-[3vw] sm:text-[0.8vw] text-white fontMont max-sm:mt-4 max-sm:text-center">
-              Get a no-obligation quote from our expert roofing and siding team. Fast, reliable, and trusted by homeowners across Long Island.
-            </p>
-            <form
-              onSubmit={handleFooterSubmit}
-              className="overflow-hidden w-full items-center flex flex-col justify-between items-center pt-4"
-            >
-              <div className="w-full flex flex-col sm:flex-row sm:justify-between max-sm:gap-6">
-                <input
-                  className="w-full sm:w-[30%] outline-none border bg-transparent border-transparent text-white border-b-[#7FFF00] py-2 placeholder:fontMont placeholder:text-white placeholder:font-light placeholder:italic"
-                  type="text"
-                  placeholder="Full Name"
-                />
-                <input
-                  className="w-full sm:w-[30%] outline-none border bg-transparent border-transparent text-white border-b-[#7FFF00] py-2 placeholder:fontMont placeholder:text-white placeholder:font-light placeholder:italic"
-                  type="number"
-                  placeholder="Phone Number"
-                />
-                <input
-                  className="w-full sm:w-[30%] outline-none border bg-transparent border-transparent text-white border-b-[#7FFF00] py-2 placeholder:fontMont placeholder:text-white placeholder:font-light placeholder:italic"
-                  type="email"
-                  placeholder="Email"
-                />
-              </div>
-              <textarea
-                rows="2"
-                placeholder="Message"
-                className="w-full outline-none max-sm:mt-4 border bg-transparent border-transparent text-white border-b-[#7FFF00] py-2 placeholder:fontMont placeholder:text-white placeholder:font-light placeholder:italic"
-              ></textarea>
-              <button
-                type="submit"
-                className="bg-[#7FFF00] px-4 py-1 mt-5 rounded-3xl fontMont font-bold uppercase text-sm hover:text-[#7FFF00] hover:bg-black transition-all duration-300"
+              <form
+                onSubmit={handleFooterSubmit}
+                className="w-full flex flex-col gap-4"
               >
-                Get a Quote
-              </button>
-            </form>
+                <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <input
+                    className="w-full outline-none bg-white/20 backdrop-blur-sm border border-white/30 text-white rounded-lg px-4 py-2.5 placeholder:fontMont placeholder:text-white/70 placeholder:font-normal focus:bg-white/30 focus:border-[#7FFF00] transition-all duration-200"
+                    type="text"
+                    placeholder="Full Name"
+                    required
+                  />
+                  <input
+                    className="w-full outline-none bg-white/20 backdrop-blur-sm border border-white/30 text-white rounded-lg px-4 py-2.5 placeholder:fontMont placeholder:text-white/70 placeholder:font-normal focus:bg-white/30 focus:border-[#7FFF00] transition-all duration-200"
+                    type="tel"
+                    placeholder="Phone Number"
+                    required
+                  />
+                </div>
+                <input
+                  className="w-full outline-none bg-white/20 backdrop-blur-sm border border-white/30 text-white rounded-lg px-4 py-2.5 placeholder:fontMont placeholder:text-white/70 placeholder:font-normal focus:bg-white/30 focus:border-[#7FFF00] transition-all duration-200"
+                  type="email"
+                  placeholder="Email Address"
+                  required
+                />
+                <textarea
+                  rows="3"
+                  placeholder="Tell us about your project..."
+                  className="w-full outline-none bg-white/20 backdrop-blur-sm border border-white/30 text-white rounded-lg px-4 py-2.5 placeholder:fontMont placeholder:text-white/70 placeholder:font-normal focus:bg-white/30 focus:border-[#7FFF00] transition-all duration-200 resize-none"
+                  required
+                ></textarea>
+                <button
+                  type="submit"
+                  className="w-full bg-[#7FFF00] px-6 py-3 rounded-xl fontMont font-bold text-base text-black hover:bg-white hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
+                >
+                  Send Request
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </button>
+                {quoteStatus.footer && (
+                  <p className="text-sm text-[#7FFF00] fontMont text-center bg-white/10 rounded-lg py-3 px-4" aria-live="polite">
+                    Awesome! We'll be in contact with you as soon as possible
+                  </p>
+                )}
+              </form>
+            </div>
           </div>
         </div>
 
