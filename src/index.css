@@ -66,6 +66,14 @@ html {
   min-height: 100vh;
 }
 
+.hide-scrollbar {
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Animate pulse for badge dot */
 @keyframes pulse {
   0%, 100% {
