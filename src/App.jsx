@@ -60,20 +60,26 @@ function App() {
   const quickQuoteRef = useRef(null);
   const quoteTimerRef = useRef(null);
   const reviewsTrackRef = useRef(null);
+  const swiperRef = useRef(null);
+  const testimonialTimerRef = useRef(null);
   const [showModalQuote, setShowModalQuote] = useState(false);
   const [quoteActive, setQuoteActive] = useState(false);
   const [navHidden, setNavHidden] = useState(false);
   const [quoteStatus, setQuoteStatus] = useState({ hero: false, modal: false });
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewSrc, setPreviewSrc] = useState(null);
+  const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const [testimonialProgress, setTestimonialProgress] = useState(0);
 
   useEffect(() => {
-    let swiperInstance;
     const script = document.createElement("script");
     script.src = "https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js";
     script.async = true;
     const initSwiper = () => {
       if (window.Swiper) {
         const isMobile = window.matchMedia("(max-width: 639px)").matches;
-        swiperInstance = new window.Swiper(".mySwiper", {
+        swiperRef.current = new window.Swiper(".mySwiper", {
           slidesPerView: isMobile ? 1.15 : 3.5,
           spaceBetween: isMobile ? 12 : 24,
           centeredSlides: isMobile,
@@ -82,11 +88,14 @@ function App() {
           autoplay: {
             delay: 0,
             disableOnInteraction: false,
-            pauseOnMouseEnter: !isMobile,
+            pauseOnMouseEnter: false,
+            stopOnLastSlide: false,
+            waitForTransition: false,
           },
           freeMode: true,
           freeModeMomentum: false,
           grabCursor: true,
+          allowTouchMove: true,
           breakpoints: {
             640: {
               slidesPerView: 2.5,
@@ -99,6 +108,18 @@ function App() {
               centeredSlides: false,
             },
           },
+          on: {
+            init: function() {
+              // Ensure autoplay starts
+              this.autoplay.start();
+            },
+            click: function() {
+              // Restart autoplay on any click
+              if (this.autoplay && !this.autoplay.running) {
+                this.autoplay.start();
+              }
+            },
+          },
         });
       }
     };
@@ -107,8 +128,8 @@ function App() {
     return () => {
       script.removeEventListener("load", initSwiper);
       document.body.removeChild(script);
-      if (swiperInstance) {
-        swiperInstance.destroy();
+      if (swiperRef.current) {
+        swiperRef.current.destroy();
       }
     };
   }, []);
@@ -120,6 +141,8 @@ function App() {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add("visible");
+          } else {
+            entry.target.classList.remove("visible");
           }
         });
       },
@@ -140,6 +163,8 @@ function App() {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add("is-visible");
+          } else {
+            entry.target.classList.remove("is-visible");
           }
         });
       },
@@ -158,11 +183,12 @@ function App() {
       return;
     }
     const observer = new IntersectionObserver(
-      (entries, obs) => {
+      (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add("btn-visible");
-            obs.unobserve(entry.target);
+          } else {
+            entry.target.classList.remove("btn-visible");
           }
         });
       },
@@ -173,6 +199,44 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const handleKey = (event) => {
+      if (event.key === "Escape" && previewOpen) {
+        closePreview();
+      }
+    };
+    if (previewOpen) {
+      document.addEventListener("keydown", handleKey);
+    }
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [previewOpen]);
+
+  const openPreview = (src) => {
+    setPreviewSrc(src);
+    setPreviewOpen(true);
+    setTimeout(() => setPreviewVisible(true), 30);
+    // Ensure Swiper keeps running
+    setTimeout(() => {
+      if (swiperRef.current && swiperRef.current.autoplay) {
+        swiperRef.current.autoplay.start();
+      }
+    }, 100);
+  };
+
+  const closePreview = () => {
+    setPreviewVisible(false);
+    setTimeout(() => {
+      setPreviewOpen(false);
+      setPreviewSrc(null);
+      // Restart Swiper autoplay if it exists
+      if (swiperRef.current && swiperRef.current.autoplay) {
+        swiperRef.current.autoplay.start();
+      }
+    }, 300);
+  };
+
+  useEffect(() => {
     const revealTargets = document.querySelectorAll(".scroll-reveal, .scroll-reveal-left");
     if (!revealTargets.length) return;
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -181,11 +245,12 @@ function App() {
       return;
     }
     const observer = new IntersectionObserver(
-      (entries, obs) => {
-        entries.forEach(async (entry) => {
+      (entries) => {
+        entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add("reveal-visible");
-            obs.unobserve(entry.target);
+          } else {
+            entry.target.classList.remove("reveal-visible");
           }
         });
       },
@@ -206,11 +271,12 @@ function App() {
       return;
     }
     const observer = new IntersectionObserver(
-      (entries, obs) => {
+      (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add("motion-visible");
-            obs.unobserve(entry.target);
+          } else {
+            entry.target.classList.remove("motion-visible");
           }
         });
       },
@@ -333,12 +399,22 @@ function App() {
 
   const renderQuoteForm = (variant = "hero") => {
     const formKey = variant === "modal" ? "modal" : "hero";
+    const formWidth = variant === "modal" ? "max-w-[620px]" : "max-w-[540px]";
+    const formBackground =
+      variant === "modal"
+        ? "bg-gradient-to-br from-black/95 via-black/80 to-black/95"
+        : "bg-gradient-to-br from-black/90 via-black/80 to-black/80";
+    const inputClass =
+      "w-full bg-white/5 border border-white/15 rounded-2xl px-4 py-3 text-sm text-white placeholder:text-white/70 focus:border-[#7FFF00] focus:bg-white/10 transition-all duration-200 outline-none fontMont";
+    const textareaClass = `${inputClass} resize-none min-h-[120px]`;
     return (
     <form
       id="quick-quote"
       ref={variant === "hero" ? quickQuoteRef : null}
-      className={`w-full max-sm:rounded-xl sm:w-[80%] bg-black sm:bg-black/70 p-8 flex flex-col gap-6 justify-start items-center border-2 transition ${
-        quoteActive ? "border-[#7FFF00] shadow-[0_0_25px_rgba(127,255,0,0.55)]" : "border-transparent"
+      className={`w-full ${formWidth} ${formBackground} p-8 sm:p-10 flex flex-col gap-6 justify-start items-center border-2 rounded-[32px] backdrop-blur-xl transition-all duration-300 ${
+        quoteActive
+          ? "border-[#7FFF00] shadow-[0_0_35px_rgba(127,255,0,0.35)]"
+          : "border-white/15 shadow-[0_20px_60px_rgba(0,0,0,0.4)]"
       }`}
       onSubmit={(event) => handleQuoteSubmit(event, { closeModal: false, formKey })}
     >
@@ -352,32 +428,37 @@ function App() {
           ×
         </button>
       )}
-      <h2 className="fontMont font-semibold text-2xl sm:text-3xl text-white">
-        GET A <span className="text-[#7FFF00]">QUICK</span> QUOTE!
-      </h2>
+      <div className="w-full text-center space-y-2">
+        <h2 className="fontMont font-semibold text-2xl sm:text-3xl text-white tracking-tight">
+          GET A <span className="text-[#7FFF00]">QUICK</span> QUOTE!
+        </h2>
+        <p className="text-xs sm:text-sm text-white/70 uppercase tracking-[0.5em]">
+          Response guarantee · Fully licensed crew
+        </p>
+      </div>
       <input
         type="text"
         placeholder="Full Name"
-        className="w-full outline-none border bg-transparent border-transparent text-white border-b-[#7FFF00] py-2 placeholder:fontMont placeholder:text-white placeholder:font-light placeholder:italic"
+        className={inputClass}
       />
       <input
         type="number"
         placeholder="Phone Number"
-        className="w-full outline-none border bg-transparent border-transparent text-white border-b-[#7FFF00] py-2 placeholder:fontMont placeholder:text-white placeholder:font-light placeholder:italic"
+        className={inputClass}
       />
       <input
         type="email"
         placeholder="Email"
-        className="w-full outline-none border bg-transparent border-transparent text-white border-b-[#7FFF00] py-2 placeholder:fontMont placeholder:text-white placeholder:font-light placeholder:italic"
+        className={inputClass}
       />
       <textarea
         rows="4"
         placeholder="Message"
-        className="w-full outline-none border bg-transparent border-transparent text-white border-b-[#7FFF00] py-2 placeholder:fontMont placeholder:text-white placeholder:font-light placeholder:italic"
+        className={textareaClass}
       ></textarea>
       <button
         type="submit"
-        className="fontMont mx-auto text-black font-bold text-sm sm:text-base rounded-xl px-6 py-3 flex justify-center items-center bg-[#7FFF00] hover:bg-white duration-200 ease-in"
+        className="fontMont mx-auto text-black font-bold text-sm sm:text-base rounded-[28px] px-6 py-3 flex justify-center items-center bg-[#7FFF00] hover:bg-white duration-200 ease-in shadow-[0_15px_40px_rgba(127,255,0,0.45)]"
       >
         Get a Quote
       </button>
@@ -415,7 +496,7 @@ function App() {
       date: "5 months ago",
       meta: "3 reviews · 2 photos",
       rating: 5,
-      text: "I have known Herman and his team for over 10 years. My former house’s roof blew off during hurricane Sandy. Desperate to have the roof covered before more rain came, Herman came the next morning and helped tarp the roof. His crew then came back a few days later and replaced my roof. After this I have always used Herman for all of my roofing and siding needs. In 2021, they replaced all of the siding on my second house. I included pictures to show the dramatic difference and great work his team did. Most recently his team reroofed and sided my sheds. Herman is a consummate professional, always on time and courteous. His team does a great job and always clean up the job site so it looks like they were not there. I would recommend Long Island Construction Plus to anyone.",
+      text: "I have known Herman and his team for over 10 years. After Hurricane Sandy blew off my roof, Herman arrived the next morning to tarp it and his crew replaced the roof a few days later. Since then I've relied on him for every roofing and siding need—from a full siding replacement in 2021 to reroofing and siding my sheds. Herman is professional, punctual, and courteous, and his crew always leaves the job site spotless. I recommend Long Island Construction Plus to anyone.",
     },
     {
       name: "Grace McGuire",
@@ -423,7 +504,7 @@ function App() {
       date: "8 months ago",
       meta: "6 reviews · 4 photos",
       rating: 5,
-      text: "Herman and his crew did such a wonderful job making my house beautiful! They worked tirelessly for 3 full days siding the front of my house! He even installed a much needed railing on the side of my front steps. I would recommend this company to anyone who wants to have their home improvement done by a reliable company!",
+      text: "Herman and his crew did such a wonderful job making my house beautiful! They worked tirelessly for 3 full days siding the front of my house and even installed a much needed railing on the side of my front steps. I would recommend this company to anyone who wants reliable, beautiful home improvement work!",
     },
     {
       name: "Peter Kassimis",
@@ -432,7 +513,7 @@ function App() {
       meta: "8 reviews · 4 photos",
       badge: "Reasonable price",
       rating: 5,
-      text: "I had a great experience with George. He gave me estimates, suggestions and explained how long everything would take. He did a new roof, added a portico, replaced 3 skylights, installed a chimney chase, outdoor high hats, and a chandelier, replaced the gutters, added molding around my garage doors, installed a new driveway, and did a stoop and pavers. Some rain threw some work off schedule but they worked long days and weekends to complete everything on time.",
+      text: "I had a great experience with George. He gave me estimates, suggestions, and clear timelines. The team installed a new roof, added a portico, replaced skylights, installed a chimney chase, outdoor high hats, a chandelier, new gutters, garage-door molding, a driveway, and fresh stoop and pavers. Rain caused minor delays, but they worked long days and weekends to finish on time.",
     },
     {
       name: "Brigette Renaud",
@@ -441,7 +522,7 @@ function App() {
       meta: "Local Guide · 16 reviews",
       badge: "Great price",
       rating: 5,
-      text: "Long Island Construction Plus did an amazing emergency roof replacement for us in Suffolk County in the Spring of this year. An older house with many leaks. We started to try to patch and quickly realized we needed a whole new roof. Hermann, the owner was so kind to give us a credit of some of our fix up costs towards the much larger outlay for a new roof. The roof is perfect functioning and looks great with the enhanced tiles that will protect from both wind and water. We were surprised that the whole job was done in a couple days and they helped us deal with dust clean up inside after the roof replacement. As a homeowner in Suffolk County and having dealt with many contractors over the years, we found this company stellar and plan to use them for many more jobs.",
+      text: "Long Island Construction Plus did an amazing emergency roof replacement for us in Suffolk County. Hermann credited part of our repair costs toward the full roof replacement, and the enhanced tiles now protect us from wind and water. The entire job was done in just a couple of days, and they even helped us with dust cleanup inside afterward. We plan to use them for many more jobs.",
     },
     {
       name: "R R",
@@ -453,15 +534,34 @@ function App() {
     },
   ];
 
-  const scrollTestimonials = (direction = 1) => {
-    if (!reviewsTrackRef.current) return;
-    const firstCard = reviewsTrackRef.current.querySelector(".testimonial-card");
-    const cardWidth = firstCard ? firstCard.getBoundingClientRect().width + 20 : 320;
-    reviewsTrackRef.current.scrollBy({
-      left: direction * cardWidth,
-      behavior: "smooth",
-    });
+  const goToTestimonial = (index) => {
+    setCurrentTestimonial(index);
+    setTestimonialProgress(0);
   };
+
+  const nextTestimonial = () => {
+    setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
+    setTestimonialProgress(0);
+  };
+
+  const prevTestimonial = () => {
+    setCurrentTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+    setTestimonialProgress(0);
+  };
+
+  useEffect(() => {
+    const progressInterval = setInterval(() => {
+      setTestimonialProgress((prev) => {
+        if (prev >= 100) {
+          nextTestimonial();
+          return 0;
+        }
+        return prev + 0.5;
+      });
+    }, 30);
+
+    return () => clearInterval(progressInterval);
+  }, []);
 
   return (
     <div className="main px-0 sm:px-2 pt-0 pb-0">
@@ -551,23 +651,25 @@ function App() {
             className="w-28 sm:w-40 lg:w-48 transition-all duration-200 hover:scale-105"
           />
         </a>
-        
-        <div className="hidden md:flex items-center gap-6 lg:gap-8">
+
+        <div className="hidden md:flex flex-1 justify-center">
           {/* Navigation Menu */}
-          <nav className="flex items-center gap-6 lg:gap-8">
+          <nav className="flex flex-1 justify-center items-center gap-6 lg:gap-8 max-w-[520px] w-full">
             {navLinks.map((item) => (
               <a
                 key={item.label}
                 href={item.href}
                 onClick={(e) => handleSmoothScroll(e, item.href)}
-                className="fontMont font-medium text-sm lg:text-base text-white hover:text-[#7FFF00] transition-all duration-200 relative group"
+                className="fontMont font-medium text-sm lg:text-base text-white hover:text-[#7FFF00] transition-all duration-200 relative group text-center"
               >
                 <span className="relative z-10">{item.label}</span>
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#7FFF00] group-hover:w-full transition-all duration-300" />
               </a>
             ))}
           </nav>
+        </div>
 
+        <div className="hidden md:flex items-center justify-end">
           {/* CTA Button */}
           <button
             type="button"
@@ -605,11 +707,11 @@ function App() {
 
         {/* Content Container */}
         <div className="relative z-10 w-full px-4 sm:px-6 py-16 sm:py-20 lg:py-26">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col md:flex-row gap-5 lg:gap-8 items-center justify-between">
+          <div className="max-w-[1600px] mx-auto">
+            <div className="flex flex-col md:flex-row gap-10 md:gap-12 lg:gap-16 items-start justify-between">
               
               {/* Left Side - Hero Content */}
-              <div className="w-full md:w-[55%] lg:w-[50%] text-center md:text-left space-y-3 sm:space-y-5">
+              <div className="w-full md:w-[62%] lg:w-[56%] text-center md:text-left space-y-3 sm:space-y-5">
                 {/* Badge */}
                 <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 reveal-from-left">
                   <div className="w-2 h-2 bg-[#7FFF00] rounded-full animate-pulse" />
@@ -619,15 +721,15 @@ function App() {
                 </div>
 
                 {/* Main Headline - Smaller on mobile */}
-                <h1 className="fontNF text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white leading-[1.05] reveal-from-left space-y-1 sm:space-y-2">
-                  <span className="block">
-                    <span className="inline-block">RESIDENTIAL&nbsp;&amp;</span>
-                    <span className="block sm:inline"> COMMERCIAL</span>
+                <h1 className="fontNF text-[28px] sm:text-[32px] md:text-[36px] lg:text-[38px] font-black text-white leading-[1.05] reveal-from-left tracking-[0.06em] sm:tracking-[0.1em] text-center md:text-left">
+                  <span className="block md:inline">RESIDENTIAL&nbsp;&amp;</span>
+                  <span className="block text-[#7FFF00] drop-shadow-[0_0_30px_rgba(127,255,0,0.5)] md:inline md:ml-2">
+                    COMMERCIAL
                   </span>
-                  <span className="block text-[#7FFF00] drop-shadow-[0_0_30px_rgba(127,255,0,0.5)]">
+                  <span className="block font-bold text-[32px] sm:text-[34px] md:text-[36px] tracking-[0.05em] mt-1">
                     ROOFING EXPERTS
                   </span>
-                  <span className="block">
+                  <span className="block md:inline whitespace-nowrap text-sm sm:text-base tracking-[0.15em] max-w-[14ch] md:max-w-full mx-auto md:mx-0">
                     YOU CAN <span className="text-[#7FFF00]">TRUST</span>
                   </span>
                 </h1>
@@ -681,7 +783,7 @@ function App() {
               </div>
 
               {/* Right Side - Quote Form */}
-              <div className="w-full md:w-[42%] lg:w-[45%] md:ml-6 lg:ml-10 reveal-from-right">
+              <div className="w-full md:w-[38%] lg:w-[34%] md:ml-6 lg:ml-10 reveal-from-right">
                 {renderQuoteForm("hero")}
               </div>
 
@@ -812,17 +914,17 @@ function App() {
                     </span>
                   </div>
                   
-                  <h2 className="fontNF text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase leading-tight">
+                  <h2 className="fontNF text-[36px] font-black uppercase leading-tight">
                     Save Big on Your
-                    <span className="block text-[#7FFF00] mt-1 sm:mt-2">Next Project!</span>
+                    <span className="block text-[#7FFF00] mt-1 text-[36px]">Next Project!</span>
                   </h2>
                   
                   <div className="bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-white/20">
                     <div className="flex items-baseline gap-2 sm:gap-2.5 flex-wrap">
-                      <span className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black fontMont text-[#7FFF00] drop-shadow-[0_4px_12px_rgba(127,255,0,0.4)] leading-none">
+                      <span className="text-[36px] font-black fontMont text-[#7FFF00] drop-shadow-[0_4px_12px_rgba(127,255,0,0.4)] leading-none">
                         $2,000
                       </span>
-                      <span className="text-2xl sm:text-3xl md:text-4xl font-bold fontMont">OFF</span>
+                      <span className="text-[36px] font-bold fontMont">OFF</span>
                     </div>
                     <p className="mt-2 sm:mt-3 text-sm sm:text-base md:text-lg fontMont font-medium text-white/90 leading-snug">
                       on full roof replacement or full siding projects
@@ -867,7 +969,7 @@ function App() {
               <div className="relative h-[260px] sm:h-[320px] md:h-[360px] lg:h-auto order-1 lg:order-2">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#007FFF]/20 to-transparent z-10" />
                 <img
-                  src="/assets/images/casa.webp"
+                  src="https://lh3.googleusercontent.com/geougc-cs/AMBA38sOaeD4VzG91xTcHN97ZUKsVr_CqSJU82Lv3D6oxNekrw-S7gT7ze3__bQtY4qeeZeu1_pNmORimISXDsOGGoq348y4PzLSlQzqDqIoMbvd-TJYHsljNfJU-L6KITKcoQnkMZzSRg=s3840-w3840-h1890-rw"
                   alt="Featured Roofing Project"
                   className="w-full h-full object-cover"
                   loading="lazy"
@@ -883,7 +985,7 @@ function App() {
         <div className="max-w-7xl mx-auto">
           {/* Section Header */}
           <div className="text-center mb-8 sm:mb-10">
-            <h1 className="fontNF text-[#7FFF00] text-3xl sm:text-4xl lg:text-5xl uppercase hero-heading-shadow fade-heading reveal-from-bottom mb-4">
+            <h1 className="fontNF text-[#7FFF00] text-[36px] uppercase hero-heading-shadow fade-heading reveal-from-bottom mb-4">
               Our Services
             </h1>
             <p className="fontMont text-base sm:text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed reveal-from-bottom">
@@ -1017,10 +1119,10 @@ function App() {
         <div className="max-w-7xl mx-auto">
           {/* Section Header */}
           <div className="text-center mb-8 sm:mb-12">
-            <h1 className="fontNF text-[#7FFF00] text-3xl sm:text-4xl lg:text-5xl uppercase hero-heading-shadow reveal-from-bottom mb-3">
+            <h1 className="fontNF text-[#7FFF00] text-[36px] uppercase hero-heading-shadow reveal-from-bottom mb-3">
               Why Choose
             </h1>
-            <h2 className="fontMont text-2xl sm:text-3xl lg:text-4xl font-black text-black mb-4 reveal-from-bottom">
+            <h2 className="fontMont text-[36px] font-black text-black mb-4 reveal-from-bottom">
               Long Island Construction Plus+
             </h2>
             <p className="fontMont text-base sm:text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed reveal-from-bottom">
@@ -1030,7 +1132,7 @@ function App() {
           </div>
 
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 mb-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 mb-6">
             {/* Left Side - Benefits */}
             <div className="space-y-6 reveal-from-left">
               {[
@@ -1102,15 +1204,6 @@ function App() {
                 </div>
               ))}
 
-              <button
-                onClick={handleQuoteScroll}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-[#7FFF00] to-[#55d500] hover:from-[#6ffb00] hover:to-[#72f201] text-black font-bold rounded-2xl shadow-[0_10px_30px_rgba(127,255,0,0.3)] hover:shadow-[0_15px_40px_rgba(127,255,0,0.45)] transition-all duration-300 hover:scale-105 fontMont text-sm sm:text-base"
-              >
-                <span>Request Your Free Estimate</span>
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </button>
             </div>
 
             {/* Right Side - Images */}
@@ -1119,7 +1212,7 @@ function App() {
                 {/* Image 1 - Main */}
                 <div className="relative rounded-2xl overflow-hidden shadow-xl border-4 border-white">
                   <img
-                    src="https://lh3.googleusercontent.com/geougc-cs/AMBA38sCYIe2HbGuIvcv8fn-AyV4nIdpKKbtQmj_I11CIYlHpSwmjmHqelUyD2E5PbL_UHJE-DLNyLuDLGD35BN54hbptPr9VCZ4UNMMk5fwPFAKSjhrGD5DIx-mx9qcUbeavo4xyXww=s3840-w3840-h1890-rw"
+                    src="/assets/images/service_img1.webp"
                     alt="Professional Roofing Work"
                     className="w-full h-[250px] sm:h-[300px] lg:h-[350px] object-cover"
                     loading="lazy"
@@ -1130,7 +1223,7 @@ function App() {
                 {/* Image 2 - Secondary */}
                 <div className="relative rounded-2xl overflow-hidden shadow-xl border-4 border-white">
                   <img
-                    src="https://lh3.googleusercontent.com/geougc-cs/AMBA38slMuTpxX9ZP7TtETQDG0nFeIdPk5DP9M7L9CxqiEQCyEPmw0E_3KlH9CMOFfu6SYSOmPXL9dMbNE6mKZxoj6INeygAoUbiiGKynEv2PhPwKVJhVmIVcW9HKVf1PHhjzx4jlXGW=s3840-w3840-h1890-rw"
+                    src="/assets/images/service_img2.webp"
                     alt="Quality Construction Services"
                     className="w-full h-[250px] sm:h-[300px] lg:h-[350px] object-cover"
                     loading="lazy"
@@ -1146,6 +1239,18 @@ function App() {
                   <div className="text-xs sm:text-sm font-medium fontMont uppercase tracking-wide">Years</div>
                 </div>
               </div>
+            </div>
+
+            <div className="col-span-1 lg:col-span-2 flex justify-center mt-6">
+              <button
+                onClick={handleQuoteScroll}
+                className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#7FFF00] to-[#55d500] hover:from-[#6ffb00] hover:to-[#72f201] text-black font-bold rounded-2xl shadow-[0_10px_30px_rgba(127,255,0,0.3)] hover:shadow-[0_15px_40px_rgba(127,255,0,0.45)] transition-all duration-300 hover:scale-105 fontMont text-sm sm:text-base"
+              >
+                <span>Request Your Free Estimate</span>
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </button>
             </div>
           </div>
 
@@ -1170,7 +1275,28 @@ function App() {
                 </div>
               </div>
             ))}
-          </div>
+                </div>
+
+            <div className="mt-6 reveal-from-left">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {[
+                  { value: "13+ Years", label: "Local craftsmanship", icon: "🛠️" },
+                  { value: "2,500+ sq ft", label: "Roofing installed", icon: "🏠" },
+                  { value: "4.9★", label: "Google reviews", icon: "⭐" },
+                ].map((stat) => (
+                  <div
+                    key={stat.value}
+                    className="rounded-3xl bg-white/90 border border-gray-200 shadow-lg p-5 text-center flex flex-col items-center gap-2"
+                  >
+                    <span className="text-2xl">{stat.icon}</span>
+                    <p className="text-2xl font-semibold text-[#007FFF] fontMont">{stat.value}</p>
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500">
+                      {stat.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
         </div>
       </div>
 
@@ -1181,7 +1307,7 @@ function App() {
         {/* Section Header */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 sm:mb-10">
           <div className="text-center reveal-from-bottom">
-            <h2 className="text-[#7FFF00] fontNF text-3xl sm:text-4xl lg:text-5xl uppercase hero-heading-shadow mb-4">
+            <h2 className="text-[#7FFF00] fontNF text-[36px] uppercase hero-heading-shadow mb-4">
               OUR RECENT PROJECTS
             </h2>
             <p className="fontMont text-base sm:text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
@@ -1210,7 +1336,17 @@ function App() {
                 "https://lh3.googleusercontent.com/p/AF1QipOk-kfvY4EG8KLXRP30mIh0EHE49uJWgJTNwLXV=s680-w680-h510-rw",
               ].map((src, idx) => (
                 <div key={src + idx} className="swiper-slide">
-                  <div className="project-slide-card">
+                  <div
+                    className="project-slide-card cursor-pointer"
+                    role="button"
+                    tabIndex={0}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      openPreview(src);
+                    }}
+                    onKeyDown={(event) => event.key === "Enter" && openPreview(src)}
+                  >
                     <img 
                       src={src} 
                       alt={`Construction project ${idx + 1}`} 
@@ -1223,6 +1359,37 @@ function App() {
             </div>
           </div>
         </div>
+
+        {previewOpen && (
+          <div
+            className={`fixed inset-0 z-[11000] flex items-center justify-center pointer-events-auto p-3 sm:p-6 md:p-8 transition-opacity duration-300 ${
+              previewVisible ? "opacity-100" : "opacity-0"
+            }`}
+            onClick={closePreview}
+          >
+            <div
+              className={`relative bg-white rounded-xl sm:rounded-2xl md:rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.12)] sm:shadow-[0_20px_60px_rgba(0,0,0,0.15)] p-3 sm:p-5 md:p-6 w-[95vw] sm:w-auto max-w-[95vw] sm:max-w-[90vw] md:max-w-[85vw] transition-all duration-300 ${
+                previewVisible ? "scale-100 opacity-100" : "scale-[0.97] opacity-0"
+              }`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                className="absolute top-2 right-2 sm:top-3 sm:right-3 md:top-4 md:right-4 w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-white hover:bg-gray-100 text-gray-700 hover:text-[#007FFF] text-xl sm:text-2xl font-bold transition-all duration-200 shadow-md hover:shadow-lg z-10 active:scale-95"
+                aria-label="Close image preview"
+                onClick={closePreview}
+              >
+                ✕
+              </button>
+              <div className="w-full flex items-center justify-center">
+                <img
+                  src={previewSrc}
+                  alt="Project preview"
+                  className="max-w-full max-h-[70vh] sm:max-h-[75vh] md:max-h-[80vh] rounded-lg sm:rounded-xl md:rounded-2xl object-contain"
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Bottom CTA */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1251,131 +1418,80 @@ function App() {
         </div>
       )}
 
-      <div className="w-full min-h-fit py-4 sm:py-8 pb-6 sm:pb-10 flex flex-col gap-4 sm:gap-6 fade-section">
-        <div className="flex flex-col items-center gap-3">
-          <h2 className="text-[#7FFF00] fontNF text-2xl sm:text-4xl text-center hero-heading-shadow reveal-from-bottom">WHAT OUR CLIENTS SAY</h2>
-          <div className="flex items-center gap-2 reveal-from-bottom">
-            <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <svg key={star} className="w-6 h-6 fill-[#FBBC04]" viewBox="0 0 24 24">
-                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                </svg>
-              ))}
+      <div className="w-full min-h-fit py-8 sm:py-12 pb-8 sm:pb-14 flex flex-col gap-6 sm:gap-8 fade-section bg-gradient-to-b from-gray-50/50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full">
+          <div className="flex flex-col items-center gap-4 mb-6 sm:mb-8">
+            <div className="reveal-from-bottom">
+              <h2 className="text-[#7FFF00] fontNF text-[36px] text-center hero-heading-shadow">WHAT OUR CLIENTS SAY</h2>
+              <div className="w-24 h-1 bg-gradient-to-r from-[#007FFF] to-[#7FFF00] rounded-full mx-auto mt-3" />
             </div>
-            <span className="fontMont font-bold text-lg sm:text-xl text-black">5.0</span>
-            <span className="fontMont text-sm sm:text-base text-gray-600">· 453 reviews on Google</span>
-          </div>
-        </div>
-        <div className="relative px-4 sm:px-6">
-          <div className="flex items-center justify-between mb-4">
-            <p className="fontMont text-sm text-gray-500">Swipe to read more reviews</p>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                aria-label="Scroll testimonials left"
-                onClick={() => scrollTestimonials(-1)}
-                className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:text-[#7FFF00] hover:border-[#7FFF00] transition"
-              >
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <button
-                type="button"
-                aria-label="Scroll testimonials right"
-                onClick={() => scrollTestimonials(1)}
-                className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:text-[#7FFF00] hover:border-[#7FFF00] transition"
-              >
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+            <div className="flex items-center gap-2 reveal-from-bottom bg-white px-6 py-3 rounded-full shadow-md border border-gray-100">
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <svg key={star} className="w-5 h-5 sm:w-6 sm:h-6 fill-[#FBBC04]" viewBox="0 0 24 24">
+                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                  </svg>
+                ))}
+              </div>
+              <span className="fontMont font-bold text-lg sm:text-xl text-black">5.0</span>
+              <span className="fontMont text-xs sm:text-sm text-gray-500">· 453 reviews on Google</span>
             </div>
           </div>
-          <div
-            className="overflow-hidden -mx-2"
-          >
-            <div
-              ref={reviewsTrackRef}
-              className="flex gap-5 px-2 snap-x snap-mandatory overflow-x-auto overflow-y-hidden hide-scrollbar"
-            >
-              {[
-                {
-                  name: "Ange Dallo",
-                  initials: "AD",
-                  date: "5 months ago",
-                  meta: "5 reviews · 5 photos",
-                  badge: "Reasonable price",
-                  rating: 5,
-                  text: "Herman and his crew were terrific! I had received three other estimates in addition to LI Construction, and I am pleased with my selection—prompt, courteous attention throughout the entire project and even afterwards. Herman has returned a few times to make adjustments for things we could only know after the project was completed. They were on-site for 2 weeks, on time and budget. I am thrilled and have recommended them to others who have also had work done. An entirely new roof down to the studs, new siding and seamless gutters.",
-                },
-                {
-                  name: "Matthew Crennan",
-                  initials: "MC",
-                  date: "5 months ago",
-                  meta: "3 reviews · 2 photos",
-                  rating: 5,
-                  text: "I have known Herman and his team for over 10 years. After Hurricane Sandy blew off my roof, Herman arrived the next morning to tarp it and his crew replaced the roof a few days later. Since then I've relied on him for every roofing and siding need—from a full siding replacement in 2021 to reroofing and siding my sheds. Herman is professional, punctual, and courteous, and his crew always leaves the job site spotless. I recommend Long Island Construction Plus to anyone.",
-                },
-                {
-                  name: "Grace McGuire",
-                  initials: "GM",
-                  date: "8 months ago",
-                  meta: "6 reviews · 4 photos",
-                  rating: 5,
-                  text: "Herman and his crew did such a wonderful job making my house beautiful! They worked tirelessly for 3 full days siding the front of my house and even installed a much needed railing on the side of my front steps. I would recommend this company to anyone who wants reliable, beautiful home improvement work!",
-                },
-                {
-                  name: "Peter Kassimis",
-                  initials: "PK",
-                  date: "6 months ago",
-                  meta: "8 reviews · 4 photos",
-                  badge: "Reasonable price",
-                  rating: 5,
-                  text: "I had a great experience with George. He gave me estimates, suggestions, and clear timelines. The team installed a new roof, added a portico, replaced skylights, installed a chimney chase, outdoor high hats, a chandelier, new gutters, garage-door molding, a driveway, and fresh stoop and pavers. Rain caused minor delays, but they worked long days and weekends to finish on time.",
-                },
-                {
-                  name: "Brigette Renaud",
-                  initials: "BR",
-                  date: "2 months ago",
-                  meta: "Local Guide · 16 reviews",
-                  badge: "Great price",
-                  rating: 5,
-                  text: "Long Island Construction Plus did an amazing emergency roof replacement for us in Suffolk County. Hermann credited part of our repair costs toward the full roof replacement, and the enhanced tiles now protect us from wind and water. The entire job was done in just a couple of days, and they even helped us with dust cleanup inside afterward. We plan to use them for many more jobs.",
-                },
-                {
-                  name: "R R",
-                  initials: "RR",
-                  date: "1 month ago",
-                  meta: "7 reviews",
-                  rating: 5,
-                  text: "Santos and his crew demo'd 2 large sheds and installed a complete new roof and gutter system on our house. Work was scheduled very quickly and completed to our satisfaction. Santos and team were courteous and professional and very willing to address all of our preferences at a fair price. Will use them again for other projects.",
-                },
-              ].map((review, idx) => (
+          <div className="relative">
+            <div className="flex items-center justify-between mb-5 sm:mb-6">
+              <p className="fontMont text-sm text-gray-600 font-medium">
+                {currentTestimonial + 1} of {testimonials.length}
+              </p>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <button
+                  type="button"
+                  aria-label="Previous testimonial"
+                  onClick={prevTestimonial}
+                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center text-gray-600 hover:text-white hover:bg-[#007FFF] hover:border-[#007FFF] transition-all duration-300 shadow-sm hover:shadow-lg active:scale-95"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  aria-label="Next testimonial"
+                  onClick={nextTestimonial}
+                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center text-gray-600 hover:text-white hover:bg-[#007FFF] hover:border-[#007FFF] transition-all duration-300 shadow-sm hover:shadow-lg active:scale-95"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <div className="relative overflow-hidden">
+              <div className="flex transition-transform duration-500 ease-in-out" style={{ transform: `translateX(-${currentTestimonial * 100}%)` }}>
+                {testimonials.map((review, idx) => (
                 <div
                   key={`${review.name}-${idx}`}
-                  className="testimonial-card bg-white rounded-2xl shadow-md hover:shadow-xl border border-gray-100 flex flex-col gap-4 p-6 transition-all duration-300 reveal-from-bottom min-w-[300px] sm:min-w-[340px] snap-start"
-                  style={{ animationDelay: `${idx * 0.1}s` }}
+                  className="testimonial-card bg-white rounded-2xl sm:rounded-3xl shadow-lg border-2 border-gray-100 flex flex-col gap-5 p-5 sm:p-7 transition-all duration-300 w-full flex-shrink-0"
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="reviewer-avatar w-12 h-12 sm:w-14 sm:h-14 rounded-full flex-shrink-0 shadow-md ring-2 ring-white bg-gradient-to-br from-[#007FFF] to-[#00B8FF] flex items-center justify-center text-white fontNF text-sm sm:text-base">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      <div className="reviewer-avatar w-14 h-14 sm:w-16 sm:h-16 rounded-full flex-shrink-0 shadow-lg ring-4 ring-white group-hover:ring-[#007FFF]/10 bg-gradient-to-br from-[#007FFF] to-[#00B8FF] flex items-center justify-center text-white fontNF text-base sm:text-lg transition-all duration-300">
                         {review.initials}
                       </div>
-                      <div className="flex flex-col">
-                        <h3 className="fontMont font-bold text-base text-black">{review.name}</h3>
+                      <div className="flex flex-col gap-0.5">
+                        <h3 className="fontMont font-bold text-base sm:text-lg text-black">{review.name}</h3>
                         <p className="fontMont text-xs text-gray-500">{review.meta}</p>
-                        <p className="fontMont text-xs text-gray-500">{review.date}</p>
+                        <p className="fontMont text-xs text-gray-400">{review.date}</p>
                       </div>
                     </div>
-                    <svg className="w-5 h-5 flex-shrink-0 fill-[#4285F4]" viewBox="0 0 24 24">
+                    <svg className="w-6 h-6 flex-shrink-0 fill-[#4285F4] opacity-90" viewBox="0 0 24 24">
                       <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                       <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
                       <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                       <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                     </svg>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-0.5">
                     {[...Array(review.rating)].map((_, i) => (
                       <svg key={i} className="w-5 h-5 fill-[#FBBC04]" viewBox="0 0 24 24">
                         <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
@@ -1383,8 +1499,8 @@ function App() {
                     ))}
                   </div>
                   {review.badge && (
-                    <span className="self-start inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#ECFDF3] text-[#065F46] text-xs fontMont font-semibold">
-                      <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                    <span className="self-start inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-[#ECFDF3] to-[#D1FAE5] text-[#065F46] text-xs fontMont font-semibold shadow-sm border border-[#A7F3D0]/30">
+                      <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
                         <path
                           fillRule="evenodd"
                           d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -1394,25 +1510,55 @@ function App() {
                       {review.badge}
                     </span>
                   )}
-                  <p className="fontMont text-sm sm:text-base text-gray-700 leading-relaxed">{review.text}</p>
+                  <div className="relative">
+                    <div className="absolute -left-1 -top-1 text-[#007FFF]/10 text-4xl fontNF leading-none">"</div>
+                    <p className="fontMont text-sm sm:text-base text-gray-700 leading-relaxed pl-4">{review.text}</p>
+                  </div>
                 </div>
               ))}
+              </div>
+            </div>
+
+            <div className="mt-6 sm:mt-8">
+              <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-[#007FFF] to-[#00B8FF] rounded-full transition-all duration-75 ease-linear"
+                  style={{ width: `${testimonialProgress}%` }}
+                />
+              </div>
+              <div className="flex items-center justify-center gap-2 mt-4">
+                {testimonials.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => goToTestimonial(idx)}
+                    className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                      idx === currentTestimonial 
+                        ? 'bg-[#007FFF] w-8' 
+                        : 'bg-gray-300 hover:bg-gray-400'
+                    }`}
+                    aria-label={`Go to testimonial ${idx + 1}`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
+
+          <div className="flex justify-center mt-6 sm:mt-8">
+            <button 
+              onClick={() => window.open('https://share.google/9loNOTEDxxyrMeKNl', '_blank')}
+              className="fontMont text-black font-bold text-sm sm:text-base rounded-2xl px-8 py-4 flex justify-center items-center gap-3 bg-gradient-to-r from-[#7FFF00] to-[#6ffb00] hover:from-[#6ffb00] hover:to-[#7FFF00] shadow-[0_10px_30px_rgba(127,255,0,0.3)] hover:shadow-[0_15px_40px_rgba(127,255,0,0.45)] transition-all duration-300 hover:scale-105 active:scale-95 pop-in group"
+            >
+              Read more on Google
+              <span className="w-8 h-8 p-2 bg-black group-hover:bg-white flex justify-center rounded-full items-center transition-all duration-300 group-hover:rotate-45">
+                <img src="/assets/svg/arrow.svg" alt="" className="w-full h-full object-contain group-hover:brightness-0" />
+              </span>
+            </button>
+          </div>
         </div>
-        <button 
-          onClick={() => window.open('https://share.google/9loNOTEDxxyrMeKNl', '_blank')}
-          className="fontMont mx-auto text-black font-bold text-sm sm:text-base rounded-xl px-6 py-3 flex justify-center items-center gap-2 bg-[#7FFF00] hover:bg-black duration-200 ease-in hover:text-[#7FFF00] mt-4 pop-in"
-        >
-          Read more on Google
-          <span className="w-7 h-7 p-2 bg-black flex justify-center rounded-full items-center">
-            <img src="/assets/svg/arrow.svg" alt="" className="w-full h-full object-contain" />
-          </span>
-        </button>
       </div>
 
       <div 
-        className="w-full py-12 sm:py-16 px-4 sm:px-6 fade-section scroll-reveal relative overflow-hidden"
+        className="w-full py-12 sm:py-16 md:py-20 px-4 sm:px-6 fade-section scroll-reveal relative overflow-hidden"
         style={{
           backgroundImage: "url('/assets/images/footerBeforeBanner.png')",
           backgroundPosition: "bottom center",
@@ -1422,187 +1568,210 @@ function App() {
       >
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/40 to-black/50" />
         
-        <div className="relative max-w-5xl mx-auto">
-          <div className="cta-section-card bg-white/95 backdrop-blur-sm rounded-3xl p-6 sm:p-10 border border-white/40 shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
-            <div className="flex flex-col items-center gap-5 sm:gap-6 text-center">
-              <div className="flex flex-col gap-3 reveal-from-bottom">
-                <h2 className="fontNF text-3xl sm:text-5xl lg:text-6xl font-black text-black leading-tight">
-                  READY TO GET <span className="text-[#7FFF00] drop-shadow-[0_2px_8px_rgba(127,255,0,0.5)]">STARTED?</span>
-                </h2>
-                <div className="w-24 h-1 bg-gradient-to-r from-[#007FFF] to-[#7FFF00] rounded-full mx-auto" />
-              </div>
-              
-              <p className="fontMont text-base sm:text-lg text-gray-800 max-w-2xl leading-relaxed reveal-from-bottom">
-                Contact our expert roofing team today for your <span className="font-bold text-[#007FFF]">FREE ESTIMATE.</span>
-                <br className="hidden sm:block" />
-                We'll respond quickly to schedule your on-site inspection and provide honest, competitive pricing.
-              </p>
+        <div className="relative max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-stretch">
+            
+            {/* Left Column - CTA Content */}
+            <div className="cta-content bg-white/95 backdrop-blur-sm rounded-3xl p-6 sm:p-8 md:p-10 border border-white/40 shadow-[0_20px_60px_rgba(0,0,0,0.3)] flex flex-col">
+              <div className="flex flex-col gap-6 sm:gap-8 flex-grow">
+                <div className="flex flex-col gap-3 reveal-from-bottom">
+                  <h2 className="fontNF text-[32px] sm:text-[36px] font-black text-black leading-tight">
+                    READY TO GET <span className="text-[#7FFF00] drop-shadow-[0_2px_8px_rgba(127,255,0,0.5)]">STARTED?</span>
+                  </h2>
+                  <div className="w-24 h-1 bg-gradient-to-r from-[#007FFF] to-[#7FFF00] rounded-full" />
+                </div>
+                
+                <p className="fontMont text-base sm:text-lg text-gray-800 leading-relaxed reveal-from-bottom">
+                  Contact our expert roofing team today for your <span className="font-bold text-[#007FFF]">FREE ESTIMATE.</span> We'll respond quickly to schedule your on-site inspection and provide honest, competitive pricing.
+                </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 w-full sm:w-auto mt-3 reveal-from-bottom">
-                <button 
-                  onClick={handleQuoteScroll}
-                  className="group fontMont text-black font-bold text-base sm:text-lg rounded-2xl px-8 py-4 flex justify-center items-center gap-3 bg-gradient-to-r from-[#7FFF00] to-[#55d500] hover:from-[#6ffb00] hover:to-[#72f201] transition-all duration-300 shadow-[0_10px_30px_rgba(127,255,0,0.3)] hover:shadow-[0_15px_40px_rgba(127,255,0,0.45)] hover:scale-105 relative overflow-hidden"
-                >
-                  <span className="relative z-10">Get Your Free Estimate</span>
-                  <span className="relative z-10 w-8 h-8 p-2 bg-black/90 flex justify-center rounded-full items-center group-hover:rotate-45 transition-transform duration-300">
-                    <svg className="w-full h-full" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" className="stroke-[#7FFF00]" />
+                <div className="flex flex-col gap-4 mt-2 reveal-from-bottom">
+                  <button 
+                    onClick={handleQuoteScroll}
+                    className="group fontMont text-black font-bold text-base sm:text-lg rounded-2xl px-8 py-4 flex justify-center items-center gap-3 bg-gradient-to-r from-[#7FFF00] to-[#55d500] hover:from-[#6ffb00] hover:to-[#72f201] transition-all duration-300 shadow-[0_10px_30px_rgba(127,255,0,0.3)] hover:shadow-[0_15px_40px_rgba(127,255,0,0.45)] hover:scale-105 relative overflow-hidden"
+                  >
+                    <span className="relative z-10">Get Your Free Estimate</span>
+                    <span className="relative z-10 w-8 h-8 p-2 bg-black/90 flex justify-center rounded-full items-center group-hover:rotate-45 transition-transform duration-300">
+                      <svg className="w-full h-full" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" className="stroke-[#7FFF00]" />
+                      </svg>
+                    </span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </button>
+
+                  <a 
+                    href="tel:+16314840098"
+                    className="group fontMont text-[#007FFF] font-bold text-base sm:text-lg rounded-2xl px-8 py-4 flex justify-center items-center gap-3 bg-white hover:bg-[#007FFF] border-2 border-[#007FFF] hover:border-[#007FFF] transition-all duration-300 shadow-md hover:shadow-xl hover:text-white hover:scale-105"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </button>
-
-                <a 
-                  href="tel:+16314840098"
-                  className="group fontMont text-[#007FFF] font-bold text-base sm:text-lg rounded-2xl px-8 py-4 flex justify-center items-center gap-3 bg-white hover:bg-[#007FFF] border-2 border-[#007FFF] hover:border-[#007FFF] transition-all duration-300 shadow-md hover:shadow-xl hover:text-white hover:scale-105"
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                  <span className="relative z-10">Call: (631) 484-0098</span>
-                </a>
-              </div>
-
-              <div className="flex flex-wrap justify-center gap-6 sm:gap-8 mt-6 pt-6 border-t border-gray-300 w-full reveal-from-bottom">
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-[#7FFF00]" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span className="fontMont text-sm sm:text-base text-gray-700 font-medium">Free Estimates</span>
+                    <span className="relative z-10">Call: (631) 484-0098</span>
+                  </a>
                 </div>
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-[#7FFF00]" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span className="fontMont text-sm sm:text-base text-gray-700 font-medium">Licensed & Insured</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-[#7FFF00]" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span className="fontMont text-sm sm:text-base text-gray-700 font-medium">Fast Response</span>
+
+                <div className="flex flex-wrap gap-6 mt-4 pt-6 border-t border-gray-300 reveal-from-bottom">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5 text-[#7FFF00]" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span className="fontMont text-sm sm:text-base text-gray-700 font-medium">Free Estimates</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5 text-[#7FFF00]" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span className="fontMont text-sm sm:text-base text-gray-700 font-medium">Licensed & Insured</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5 text-[#7FFF00]" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span className="fontMont text-sm sm:text-base text-gray-700 font-medium">Fast Response</span>
+                  </div>
                 </div>
               </div>
             </div>
+
+            {/* Right Column - Contact Form */}
+            <div className="cta-form-card bg-white rounded-3xl p-6 sm:p-8 border-2 border-gray-100 shadow-[0_20px_60px_rgba(0,0,0,0.2)] reveal-from-bottom flex flex-col">
+              <div className="flex flex-col gap-5 flex-grow">
+                <div>
+                  <h3 className="fontNF text-xl sm:text-2xl uppercase text-[#007FFF] font-black leading-tight mb-2">
+                    Request Your Free Estimate Today!
+                  </h3>
+                  <p className="text-sm sm:text-base text-gray-600 fontMont">
+                    Get a no-obligation quote from our expert roofing and siding team. Fast, reliable, and trusted by homeowners across Long Island.
+                  </p>
+                </div>
+
+                <form
+                  onSubmit={handleFooterSubmit}
+                  className="w-full flex flex-col gap-4"
+                >
+                  <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <input
+                      className="w-full outline-none bg-gray-50 border-2 border-gray-200 text-gray-900 rounded-xl px-4 py-3 placeholder:fontMont placeholder:text-gray-400 placeholder:font-normal focus:bg-white focus:border-[#007FFF] transition-all duration-200"
+                      type="text"
+                      placeholder="Full Name"
+                      required
+                    />
+                    <input
+                      className="w-full outline-none bg-gray-50 border-2 border-gray-200 text-gray-900 rounded-xl px-4 py-3 placeholder:fontMont placeholder:text-gray-400 placeholder:font-normal focus:bg-white focus:border-[#007FFF] transition-all duration-200"
+                      type="tel"
+                      placeholder="Phone Number"
+                      required
+                    />
+                  </div>
+                  <input
+                    className="w-full outline-none bg-gray-50 border-2 border-gray-200 text-gray-900 rounded-xl px-4 py-3 placeholder:fontMont placeholder:text-gray-400 placeholder:font-normal focus:bg-white focus:border-[#007FFF] transition-all duration-200"
+                    type="email"
+                    placeholder="Email Address"
+                    required
+                  />
+                  <textarea
+                    rows="4"
+                    placeholder="Tell us about your project..."
+                    className="w-full outline-none bg-gray-50 border-2 border-gray-200 text-gray-900 rounded-xl px-4 py-3 placeholder:fontMont placeholder:text-gray-400 placeholder:font-normal focus:bg-white focus:border-[#007FFF] transition-all duration-200 resize-none"
+                    required
+                  ></textarea>
+                  <button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-[#7FFF00] to-[#55d500] hover:from-[#6ffb00] hover:to-[#72f201] px-6 py-4 rounded-xl fontMont font-bold text-base sm:text-lg text-black shadow-[0_10px_30px_rgba(127,255,0,0.3)] hover:shadow-[0_15px_40px_rgba(127,255,0,0.45)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+                  >
+                    Send Request
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </button>
+                  {quoteStatus.footer && (
+                    <p className="text-sm text-[#007FFF] fontMont text-center bg-[#007FFF]/10 rounded-xl py-3 px-4 font-semibold" aria-live="polite">
+                      Awesome! We'll be in contact with you as soon as possible
+                    </p>
+                  )}
+                </form>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
 
       <div className="flex flex-col mt-6">
-        <div className="footer bg-[#007FFF] flex sm:flex-row flex-col w-full justify-between rounded-tr-3xl rounded-tl-3xl pt-6 px-4 sm:px-10">
-          <div className="flex flex-col gap-3 w-full sm:w-[30%] text-white fontMont text-sm py-6">
-            <img className="w-[80%] pb-6" src="/assets/images/logo.png" alt="Long Island Construction Plus+" />
-            {[
-              { icon: "/assets/svg/phone.svg", label: "(631) 484-0098", type: "phone" },
-              { icon: "/assets/svg/map.svg", label: "Serving Suffolk County & Nassau County", type: "text" },
-              { icon: "/assets/svg/email.svg", label: "liconstructionplus@gmail.com", type: "email" },
-              { icon: "/assets/svg/time.svg", label: "Monday – Saturday | 8:00 AM – 6:00 PM", type: "text" },
-            ].map((item) => (
-              <div key={item.label} className="flex gap-3 items-start">
-                <img src={item.icon} alt="" className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                {item.type === "phone" ? (
-                  <a 
-                    href="tel:+16314840098" 
-                    className="hover:text-[#7FFF00] transition-colors duration-200 font-normal"
-                  >
-                    {item.label}
-                  </a>
-                ) : item.type === "email" ? (
-                  <a 
-                    href={`mailto:${item.label}`}
-                    className="hover:text-[#7FFF00] transition-colors duration-200 font-normal"
-                  >
-                    {item.label}
-                  </a>
-                ) : (
-                  <span className="font-normal">{item.label}</span>
-                )}
-              </div>
-            ))}
-          </div>
-          <div className="w-full sm:w-[20%] text-white fontMont text-sm flex flex-col gap-2.5 sm:pl-10 py-6">
-            <h2 className="uppercase font-black text-lg sm:text-base mb-1">Quick Links</h2>
-            {[
-              { label: "Home", href: "#home" },
-              { label: "About Us", href: "#why-us" },
-              { label: "Our Services", href: "#services" },
-              { label: "Why Choose Us", href: "#why-us" },
-              { label: "Get a Quote", onClick: handleQuoteScroll },
-            ].map((link) => (
-              link.onClick ? (
-                <button
-                  key={link.label}
-                  onClick={link.onClick}
-                  className="text-sm sm:text-base font-normal hover:text-[#7FFF00] transition-colors duration-200 text-left"
-                >
-                  {link.label}
-                </button>
-              ) : (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  onClick={(e) => handleSmoothScroll(e, link.href)}
-                  className="text-sm sm:text-base font-normal hover:text-[#7FFF00] transition-colors duration-200"
-                >
-                  {link.label}
-                </a>
-              )
-            ))}
-          </div>
-          <div className="w-full sm:w-[45%] flex flex-col items-start justify-start py-6">
-            <div className="w-full bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-              <h2 className="fontNF text-lg sm:text-xl uppercase text-white font-black leading-tight mb-2">
-                Request Your Free Estimate Today!
-              </h2>
-              <p className="text-xs sm:text-sm text-white/90 fontMont mb-6">
-                Get a no-obligation quote from our expert roofing and siding team. Fast, reliable, and trusted by homeowners across Long Island.
+        <div className="footer bg-[#007FFF] rounded-tr-3xl rounded-tl-3xl pt-6 px-4 sm:px-10">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-10 py-6">
+            
+            {/* Logo & Description */}
+            <div className="flex flex-col gap-3 text-white fontMont text-sm">
+              <img className="w-[80%] sm:w-[70%] pb-3" src="/assets/images/logo.png" alt="Long Island Construction Plus+" />
+              <p className="text-sm text-white/90 leading-relaxed">
+                Your trusted partner for premium roofing, siding, and construction services across Long Island. Quality workmanship, honest pricing, guaranteed satisfaction.
               </p>
-              <form
-                onSubmit={handleFooterSubmit}
-                className="w-full flex flex-col gap-4"
-              >
-                <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <input
-                    className="w-full outline-none bg-white/20 backdrop-blur-sm border border-white/30 text-white rounded-lg px-4 py-2.5 placeholder:fontMont placeholder:text-white/70 placeholder:font-normal focus:bg-white/30 focus:border-[#7FFF00] transition-all duration-200"
-                    type="text"
-                    placeholder="Full Name"
-                    required
-                  />
-                  <input
-                    className="w-full outline-none bg-white/20 backdrop-blur-sm border border-white/30 text-white rounded-lg px-4 py-2.5 placeholder:fontMont placeholder:text-white/70 placeholder:font-normal focus:bg-white/30 focus:border-[#7FFF00] transition-all duration-200"
-                    type="tel"
-                    placeholder="Phone Number"
-                    required
-                  />
-                </div>
-                <input
-                  className="w-full outline-none bg-white/20 backdrop-blur-sm border border-white/30 text-white rounded-lg px-4 py-2.5 placeholder:fontMont placeholder:text-white/70 placeholder:font-normal focus:bg-white/30 focus:border-[#7FFF00] transition-all duration-200"
-                  type="email"
-                  placeholder="Email Address"
-                  required
-                />
-                <textarea
-                  rows="3"
-                  placeholder="Tell us about your project..."
-                  className="w-full outline-none bg-white/20 backdrop-blur-sm border border-white/30 text-white rounded-lg px-4 py-2.5 placeholder:fontMont placeholder:text-white/70 placeholder:font-normal focus:bg-white/30 focus:border-[#7FFF00] transition-all duration-200 resize-none"
-                  required
-                ></textarea>
-                <button
-                  type="submit"
-                  className="w-full bg-[#7FFF00] px-6 py-3 rounded-xl fontMont font-bold text-base text-black hover:bg-white hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
-                >
-                  Send Request
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </button>
-                {quoteStatus.footer && (
-                  <p className="text-sm text-[#7FFF00] fontMont text-center bg-white/10 rounded-lg py-3 px-4" aria-live="polite">
-                    Awesome! We'll be in contact with you as soon as possible
-                  </p>
-                )}
-              </form>
             </div>
+
+            {/* Quick Links */}
+            <div className="text-white fontMont text-sm flex flex-col gap-2.5">
+              <h2 className="uppercase font-black text-lg sm:text-base mb-1">Quick Links</h2>
+              {[
+                { label: "Home", href: "#home" },
+                { label: "About Us", href: "#why-us" },
+                { label: "Our Services", href: "#services" },
+                { label: "Why Choose Us", href: "#why-us" },
+                { label: "Get a Quote", onClick: handleQuoteScroll },
+              ].map((link) => (
+                link.onClick ? (
+                  <button
+                    key={link.label}
+                    onClick={link.onClick}
+                    className="text-sm sm:text-base font-normal hover:text-[#7FFF00] transition-colors duration-200 text-left"
+                  >
+                    {link.label}
+                  </button>
+                ) : (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    onClick={(e) => handleSmoothScroll(e, link.href)}
+                    className="text-sm sm:text-base font-normal hover:text-[#7FFF00] transition-colors duration-200"
+                  >
+                    {link.label}
+                  </a>
+                )
+              ))}
+            </div>
+
+            {/* Contact Information */}
+            <div className="text-white fontMont text-sm flex flex-col gap-2.5">
+              <h2 className="uppercase font-black text-lg sm:text-base mb-1">Contact Information</h2>
+              {[
+                { icon: "/assets/svg/phone.svg", label: "(631) 484-0098", type: "phone" },
+                { icon: "/assets/svg/map.svg", label: "Serving Suffolk County & Nassau County", type: "text" },
+                { icon: "/assets/svg/email.svg", label: "liconstructionplus@gmail.com", type: "email" },
+                { icon: "/assets/svg/time.svg", label: "Monday – Saturday | 8:00 AM – 6:00 PM", type: "text" },
+              ].map((item) => (
+                <div key={item.label} className="flex gap-3 items-start">
+                  <img src={item.icon} alt="" className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  {item.type === "phone" ? (
+                    <a 
+                      href="tel:+16314840098" 
+                      className="hover:text-[#7FFF00] transition-colors duration-200 font-normal"
+                    >
+                      {item.label}
+                    </a>
+                  ) : item.type === "email" ? (
+                    <a 
+                      href={`mailto:${item.label}`}
+                      className="hover:text-[#7FFF00] transition-colors duration-200 font-normal"
+                    >
+                      {item.label}
+                    </a>
+                  ) : (
+                    <span className="font-normal">{item.label}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+
           </div>
         </div>
 
