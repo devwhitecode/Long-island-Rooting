@@ -52,6 +52,8 @@ html {
 
 .fontNF{
      font-family: 'NfUltra', sans-serif;
+     letter-spacing: normal;
+     word-spacing: normal;
 }
 
 .hero-background {
@@ -517,7 +519,6 @@ input[type="number"] {
     /* Special Offer Section */
     .special-offer-card {
       position: relative;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .special-offer-card::before {
@@ -526,24 +527,22 @@ input[type="number"] {
       inset: -3px;
       background: linear-gradient(135deg, #7FFF00, #00B8FF, #7FFF00);
       border-radius: 1.5rem;
-      opacity: 0;
-      transition: opacity 0.4s ease;
+      opacity: 0.6;
       z-index: -1;
       filter: blur(20px);
     }
 
-    .special-offer-card:hover::before {
-      opacity: 0.6;
-    }
-
-    .special-offer-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 30px 80px rgba(0, 127, 255, 0.4);
+    .special-offer-card:hover::before,
+    .special-offer-card:hover,
+    .special-offer-card:active,
+    .special-offer-card:focus-visible {
+      transform: none;
+      box-shadow: none;
     }
 
     @media (max-width: 1024px) {
-      .special-offer-card:hover {
-        transform: translateY(-3px);
+      .special-offer-card::before {
+        inset: -2px;
       }
     }
 
@@ -552,15 +551,9 @@ input[type="number"] {
         border-radius: 1rem;
         margin: 0;
       }
-
-      .special-offer-card:hover,
-      .special-offer-card:active {
-        transform: translateY(-1px);
-        box-shadow: 0 15px 40px rgba(0, 127, 255, 0.3);
-      }
-
       .special-offer-card::before {
         border-radius: 1rem;
+        inset: -1px;
       }
     }
 
@@ -572,17 +565,6 @@ input[type="number"] {
 
       .special-offer-card {
         border-width: 1px;
-      }
-    }
-
-    /* Touch optimization */
-    @media (hover: none) and (pointer: coarse) {
-      .special-offer-card:hover {
-        transform: none;
-      }
-
-      .special-offer-card:active {
-        transform: scale(0.99);
       }
     }
 
@@ -1075,6 +1057,36 @@ button:active::after {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* Hero Heading Animation - No letter splitting */
+.animate-fadeInUp {
+    animation: fadeInUp 0.8s ease-out 0.3s forwards;
+}
+
+/* Override all headings to use Montserrat with bold weight */
+h1, h2, h3, h4, h5, h6,
+.fontNF {
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 800 !important;
+}
+
+/* Fix hero heading - prevent letter splitting with Montserrat font */
+.hero-main-heading {
+    letter-spacing: 0.02em !important;
+    word-spacing: 0 !important;
+    font-weight: 900 !important;
+}
+
+.hero-main-heading span {
+    letter-spacing: inherit !important;
+    word-spacing: 0 !important;
+    display: block !important;
+}
+
+.hero-main-heading * {
+    letter-spacing: inherit !important;
+    word-spacing: 0 !important;
 }
 
 /* Header Styles */

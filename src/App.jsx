@@ -381,6 +381,15 @@ function App() {
     event.preventDefault();
     const { closeModal = false, formKey = "hero" } = options;
     const formElement = event.target;
+    Array.from(formElement.elements).forEach((element) => {
+      if (element.tagName === "INPUT" || element.tagName === "TEXTAREA") {
+        element.value = element.value.trim();
+      }
+    });
+    if (!formElement.checkValidity()) {
+      formElement.reportValidity();
+      return;
+    }
     setQuoteStatus((prev) => ({ ...prev, [formKey]: true }));
     formElement.reset();
     flashQuoteActive();
@@ -392,12 +401,21 @@ function App() {
   const handleFooterSubmit = (event) => {
     event.preventDefault();
     const formElement = event.target;
+    Array.from(formElement.elements).forEach((element) => {
+      if (element.tagName === "INPUT" || element.tagName === "TEXTAREA") {
+        element.value = element.value.trim();
+      }
+    });
+    if (!formElement.checkValidity()) {
+      formElement.reportValidity();
+      return;
+    }
     setQuoteStatus((prev) => ({ ...prev, footer: true }));
     formElement.reset();
     flashQuoteActive();
   };
 
-  const renderQuoteForm = (variant = "hero") => {
+  const renderQuoteForm = (variant = "hero", options = {}) => {
     const formKey = variant === "modal" ? "modal" : "hero";
     const formWidth = variant === "modal" ? "max-w-[620px]" : "max-w-[540px]";
     const formBackground =
@@ -430,7 +448,7 @@ function App() {
       )}
       <div className="w-full text-center space-y-2">
         <h2 className="fontMont font-semibold text-2xl sm:text-3xl text-white tracking-tight">
-          GET A <span className="text-[#7FFF00]">QUICK</span> QUOTE!
+          GET A <span className="text-[#6CB42E]">QUICK</span> QUOTE!
         </h2>
         <p className="text-xs sm:text-sm text-white/70 uppercase tracking-[0.5em]">
           Response guarantee · Fully licensed crew
@@ -440,28 +458,38 @@ function App() {
         type="text"
         placeholder="Full Name"
         className={inputClass}
+        required
+        pattern=".*\S.*"
+        title="Please enter your full name."
       />
       <input
-        type="number"
+        type="tel"
         placeholder="Phone Number"
         className={inputClass}
+        required
+        pattern="[\d+\-\s\(\)]{7,}"
+        title="Please enter a valid phone number."
       />
       <input
         type="email"
         placeholder="Email"
         className={inputClass}
+        required
+        title="Please enter a valid email address."
       />
       <textarea
         rows="4"
         placeholder="Message"
         className={textareaClass}
+        required
+        title="Please include a message or project details."
       ></textarea>
-      <button
-        type="submit"
-        className="fontMont mx-auto text-black font-bold text-sm sm:text-base rounded-[28px] px-6 py-3 flex justify-center items-center bg-[#7FFF00] hover:bg-white duration-200 ease-in shadow-[0_15px_40px_rgba(127,255,0,0.45)]"
-      >
-        Get a Quote
-      </button>
+        <button
+          type="submit"
+          className="fontMont mx-auto text-black font-bold text-sm sm:text-base rounded-[28px] px-6 py-3 flex justify-center items-center bg-[#7FFF00] shadow-[0_10px_30px_rgba(127,255,0,0.3)] transition-all duration-200 ease-in hover:bg-gradient-to-r hover:from-[#7FFF00] hover:to-[#55d500] hover:shadow-[0_15px_40px_rgba(127,255,0,0.45)]"
+        >
+          {options.buttonLabel || "Get a Quote"}
+        </button>
       {quoteStatus[formKey] && (
         <p className="text-sm text-[#7FFF00] fontMont text-center" aria-live="polite">
           Awesome! We'll be in contact with you as soon as possible
@@ -720,17 +748,16 @@ function App() {
                   </span>
                 </div>
 
-                {/* Main Headline - Smaller on mobile */}
-                <h1 className="fontNF text-[28px] sm:text-[32px] md:text-[36px] lg:text-[38px] font-black text-white leading-[1.05] reveal-from-left tracking-[0.06em] sm:tracking-[0.1em] text-center md:text-left">
-                  <span className="block md:inline">RESIDENTIAL&nbsp;&amp;</span>
-                  <span className="block text-[#7FFF00] drop-shadow-[0_0_30px_rgba(127,255,0,0.5)] md:inline md:ml-2">
-                    COMMERCIAL
+                {/* Main Headline */}
+                <h1 className="hero-main-heading text-[32px] sm:text-[36px] md:text-[42px] lg:text-[48px] font-bold text-white leading-[1.3] text-center md:text-left opacity-0 animate-fadeInUp" style={{ letterSpacing: '0.02em', wordSpacing: '0' }}>
+                  <span className="block mb-2" style={{ letterSpacing: '0.02em' }}>
+                    RESIDENTIAL & COMMERCIAL
                   </span>
-                  <span className="block font-bold text-[32px] sm:text-[34px] md:text-[36px] tracking-[0.05em] mt-1">
-                    ROOFING EXPERTS
+                  <span className="block mb-2" style={{ letterSpacing: '0.02em' }}>
+                    ROOFING EXPERTS <span className="text-[#6CB42E] font-black" style={{ textShadow: '0 2px 6px rgba(0,0,0,0.4)', letterSpacing: '0.02em' }}>Serving In</span>
                   </span>
-                  <span className="block md:inline whitespace-nowrap text-sm sm:text-base tracking-[0.15em] max-w-[14ch] md:max-w-full mx-auto md:mx-0">
-                    YOU CAN <span className="text-[#7FFF00]">TRUST</span>
+                  <span className="block text-[24px] sm:text-[28px] md:text-[32px] lg:text-[36px] font-medium text-white/95" style={{ letterSpacing: '0.01em' }}>
+                    Suffolk County & Nassau County
                   </span>
                 </h1>
 
@@ -770,10 +797,10 @@ function App() {
                     <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </button>
 
-                  <a
-                    href="tel:+16314840098"
-                    className="inline-flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white font-bold rounded-xl sm:rounded-2xl border-2 border-white/30 hover:border-white/50 transition-all duration-300 fontMont text-sm sm:text-base"
-                  >
+              <a
+                href="tel:+16314840098"
+                className="inline-flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 bg-white text-[#007FFF] font-bold rounded-xl sm:rounded-2xl transition-all duration-300 fontMont text-sm sm:text-base"
+              >
                     <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
@@ -815,7 +842,7 @@ function App() {
                 icon: (
                   <svg className="w-10 h-10 sm:w-12 sm:h-12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 2L3 7V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V7L12 2Z" fill="#007FFF" fillOpacity="0.1" stroke="#007FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M9 12L11 14L15 10" stroke="#7FFF00" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M9 12L11 14L15 10" stroke="#C8000C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 ),
                 title: "Licensed & Insured",
@@ -825,7 +852,7 @@ function App() {
                 icon: (
                   <svg className="w-10 h-10 sm:w-12 sm:h-12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z" fill="#007FFF" fillOpacity="0.1" stroke="#007FFF" strokeWidth="2"/>
-                    <path d="M12 6V12L16 14" stroke="#7FFF00" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M12 6V12L16 14" stroke="#C8000C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 ),
                 title: "Since 2012",
@@ -835,7 +862,7 @@ function App() {
                 icon: (
                   <svg className="w-10 h-10 sm:w-12 sm:h-12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" fill="#007FFF" fillOpacity="0.1" stroke="#007FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M9 22V12H15V22" stroke="#7FFF00" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M9 22V12H15V22" stroke="#C8000C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 ),
                 title: "Family-Owned",
@@ -845,7 +872,7 @@ function App() {
                 icon: (
                   <svg className="w-10 h-10 sm:w-12 sm:h-12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M21 10C21 17 12 23 12 23C12 23 3 17 3 10C3 7.61305 3.94821 5.32387 5.63604 3.63604C7.32387 1.94821 9.61305 1 12 1C14.3869 1 16.6761 1.94821 18.364 3.63604C20.0518 5.32387 21 7.61305 21 10Z" fill="#007FFF" fillOpacity="0.1" stroke="#007FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <circle cx="12" cy="10" r="3" fill="#7FFF00" stroke="#7FFF00" strokeWidth="2"/>
+                    <circle cx="12" cy="10" r="3" fill="#C8000C" stroke="#C8000C" strokeWidth="2"/>
                   </svg>
                 ),
                 title: "Long Island",
@@ -877,21 +904,21 @@ function App() {
           <div className="mt-6 sm:mt-8 text-center reveal-from-bottom">
             <div className="inline-flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs sm:text-sm text-gray-600 fontMont">
               <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-[#7FFF00]" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-4 h-4 text-[#C8000C]" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
                 <span className="font-medium">A+ Rated</span>
               </div>
               <div className="hidden sm:block w-px h-4 bg-gray-300" />
               <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-[#7FFF00]" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-4 h-4 text-[#C8000C]" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
                 <span className="font-medium">5-Star Reviews</span>
               </div>
               <div className="hidden sm:block w-px h-4 bg-gray-300" />
               <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-[#7FFF00]" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-4 h-4 text-[#C8000C]" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
                 <span className="font-medium">Free Estimates</span>
@@ -1558,139 +1585,74 @@ function App() {
       </div>
 
       <div 
-        className="w-full py-12 sm:py-16 md:py-20 px-4 sm:px-6 fade-section scroll-reveal relative overflow-hidden"
+        className="w-full py-12 sm:py-16 md:py-20 fade-section scroll-reveal relative overflow-hidden"
         style={{
           backgroundImage: "url('/assets/images/footerBeforeBanner.png')",
           backgroundPosition: "bottom center",
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
+          width: "100vw",
+          marginLeft: "calc(-50vw + 50%)",
+          marginRight: "calc(-50vw + 50%)",
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/40 to-black/50" />
         
-        <div className="relative max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-stretch">
+        <div className="relative w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-stretch max-w-7xl mx-auto px-4 sm:px-6">
             
             {/* Left Column - CTA Content */}
-            <div className="cta-content bg-white/95 backdrop-blur-sm rounded-3xl p-6 sm:p-8 md:p-10 border border-white/40 shadow-[0_20px_60px_rgba(0,0,0,0.3)] flex flex-col">
+            <div className="flex flex-col gap-6 sm:gap-8 flex-grow p-6 sm:p-8 md:p-10">
               <div className="flex flex-col gap-6 sm:gap-8 flex-grow">
-                <div className="flex flex-col gap-3 reveal-from-bottom">
-                  <h2 className="fontNF text-[32px] sm:text-[36px] font-black text-black leading-tight">
-                    READY TO GET <span className="text-[#7FFF00] drop-shadow-[0_2px_8px_rgba(127,255,0,0.5)]">STARTED?</span>
-                  </h2>
-                  <div className="w-24 h-1 bg-gradient-to-r from-[#007FFF] to-[#7FFF00] rounded-full" />
-                </div>
-                
-                <p className="fontMont text-base sm:text-lg text-gray-800 leading-relaxed reveal-from-bottom">
-                  Contact our expert roofing team today for your <span className="font-bold text-[#007FFF]">FREE ESTIMATE.</span> We'll respond quickly to schedule your on-site inspection and provide honest, competitive pricing.
-                </p>
+              <div className="flex flex-col gap-3 reveal-from-bottom">
+                <h2 className="fontNF text-[32px] sm:text-[36px] md:text-[40px] font-semibold text-white leading-[1.2] tracking-[0.05em] drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)]">
+                  READY TO GET <span className="text-[#6CB42E]">STARTED?</span>
+                </h2>
+                <div className="w-24 h-1 bg-gradient-to-r from-[#007FFF] to-[#7FFF00] rounded-full" />
+              </div>
+              
+              <p className="fontMont text-sm sm:text-base lg:text-lg text-gray-200 leading-relaxed max-w-2xl reveal-from-bottom">
+                Contact our expert roofing team today for your <span className="font-bold text-white">FREE ESTIMATE.</span> We'll respond quickly to schedule your on-site inspection and provide honest, competitive pricing.
+              </p>
 
-                <div className="flex flex-col gap-4 mt-2 reveal-from-bottom">
-                  <button 
-                    onClick={handleQuoteScroll}
-                    className="group fontMont text-black font-bold text-base sm:text-lg rounded-2xl px-8 py-4 flex justify-center items-center gap-3 bg-gradient-to-r from-[#7FFF00] to-[#55d500] hover:from-[#6ffb00] hover:to-[#72f201] transition-all duration-300 shadow-[0_10px_30px_rgba(127,255,0,0.3)] hover:shadow-[0_15px_40px_rgba(127,255,0,0.45)] hover:scale-105 relative overflow-hidden"
-                  >
-                    <span className="relative z-10">Get Your Free Estimate</span>
-                    <span className="relative z-10 w-8 h-8 p-2 bg-black/90 flex justify-center rounded-full items-center group-hover:rotate-45 transition-transform duration-300">
-                      <svg className="w-full h-full" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" className="stroke-[#7FFF00]" />
-                      </svg>
-                    </span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  </button>
-
-                  <a 
-                    href="tel:+16314840098"
-                    className="group fontMont text-[#007FFF] font-bold text-base sm:text-lg rounded-2xl px-8 py-4 flex justify-center items-center gap-3 bg-white hover:bg-[#007FFF] border-2 border-[#007FFF] hover:border-[#007FFF] transition-all duration-300 shadow-md hover:shadow-xl hover:text-white hover:scale-105"
-                  >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                    <span className="relative z-10">Call: (631) 484-0098</span>
-                  </a>
-                </div>
+              <div className="flex flex-col gap-4 mt-2 reveal-from-bottom">
+                <a 
+                  href="tel:+16314840098"
+                  className="group fontMont text-[#007FFF] font-bold text-base sm:text-lg rounded-2xl px-8 py-4 flex justify-center items-center gap-3 bg-white hover:bg-[#007FFF] border-2 border-[#007FFF] hover:border-[#007FFF] transition-all duration-300 shadow-md hover:shadow-xl hover:text-white hover:scale-105"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                  <span className="relative z-10">Call: (631) 484-0098</span>
+                </a>
+              </div>
 
                 <div className="flex flex-wrap gap-6 mt-4 pt-6 border-t border-gray-300 reveal-from-bottom">
                   <div className="flex items-center gap-2">
                     <svg className="w-5 h-5 text-[#7FFF00]" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
-                    <span className="fontMont text-sm sm:text-base text-gray-700 font-medium">Free Estimates</span>
+                    <span className="fontMont text-sm sm:text-base text-white font-medium">Free Estimates</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <svg className="w-5 h-5 text-[#7FFF00]" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
-                    <span className="fontMont text-sm sm:text-base text-gray-700 font-medium">Licensed & Insured</span>
+                    <span className="fontMont text-sm sm:text-base text-white font-medium">Licensed & Insured</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <svg className="w-5 h-5 text-[#7FFF00]" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
-                    <span className="fontMont text-sm sm:text-base text-gray-700 font-medium">Fast Response</span>
+                    <span className="fontMont text-sm sm:text-base text-white font-medium">Fast Response</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Right Column - Contact Form */}
-            <div className="cta-form-card bg-white rounded-3xl p-6 sm:p-8 border-2 border-gray-100 shadow-[0_20px_60px_rgba(0,0,0,0.2)] reveal-from-bottom flex flex-col">
-              <div className="flex flex-col gap-5 flex-grow">
-                <div>
-                  <h3 className="fontNF text-xl sm:text-2xl uppercase text-[#007FFF] font-black leading-tight mb-2">
-                    Request Your Free Estimate Today!
-                  </h3>
-                  <p className="text-sm sm:text-base text-gray-600 fontMont">
-                    Get a no-obligation quote from our expert roofing and siding team. Fast, reliable, and trusted by homeowners across Long Island.
-                  </p>
-                </div>
-
-                <form
-                  onSubmit={handleFooterSubmit}
-                  className="w-full flex flex-col gap-4"
-                >
-                  <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <input
-                      className="w-full outline-none bg-gray-50 border-2 border-gray-200 text-gray-900 rounded-xl px-4 py-3 placeholder:fontMont placeholder:text-gray-400 placeholder:font-normal focus:bg-white focus:border-[#007FFF] transition-all duration-200"
-                      type="text"
-                      placeholder="Full Name"
-                      required
-                    />
-                    <input
-                      className="w-full outline-none bg-gray-50 border-2 border-gray-200 text-gray-900 rounded-xl px-4 py-3 placeholder:fontMont placeholder:text-gray-400 placeholder:font-normal focus:bg-white focus:border-[#007FFF] transition-all duration-200"
-                      type="tel"
-                      placeholder="Phone Number"
-                      required
-                    />
-                  </div>
-                  <input
-                    className="w-full outline-none bg-gray-50 border-2 border-gray-200 text-gray-900 rounded-xl px-4 py-3 placeholder:fontMont placeholder:text-gray-400 placeholder:font-normal focus:bg-white focus:border-[#007FFF] transition-all duration-200"
-                    type="email"
-                    placeholder="Email Address"
-                    required
-                  />
-                  <textarea
-                    rows="4"
-                    placeholder="Tell us about your project..."
-                    className="w-full outline-none bg-gray-50 border-2 border-gray-200 text-gray-900 rounded-xl px-4 py-3 placeholder:fontMont placeholder:text-gray-400 placeholder:font-normal focus:bg-white focus:border-[#007FFF] transition-all duration-200 resize-none"
-                    required
-                  ></textarea>
-                  <button
-                    type="submit"
-                    className="w-full bg-gradient-to-r from-[#7FFF00] to-[#55d500] hover:from-[#6ffb00] hover:to-[#72f201] px-6 py-4 rounded-xl fontMont font-bold text-base sm:text-lg text-black shadow-[0_10px_30px_rgba(127,255,0,0.3)] hover:shadow-[0_15px_40px_rgba(127,255,0,0.45)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
-                  >
-                    Send Request
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </button>
-                  {quoteStatus.footer && (
-                    <p className="text-sm text-[#007FFF] fontMont text-center bg-[#007FFF]/10 rounded-xl py-3 px-4 font-semibold" aria-live="polite">
-                      Awesome! We'll be in contact with you as soon as possible
-                    </p>
-                  )}
-                </form>
-              </div>
+            {/* Right Column - Hero Quote Form */}
+            <div className="cta-form-card bg-transparent rounded-3xl p-0 border-0 reveal-from-bottom flex flex-col">
+              {renderQuoteForm("secondary", { buttonLabel: "Get A Free Inspection" })}
             </div>
 
           </div>
@@ -1710,34 +1672,33 @@ function App() {
             </div>
 
             {/* Quick Links */}
-            <div className="text-white fontMont text-sm flex flex-col gap-2.5">
+            <div className="text-white fontMont text-sm flex flex-col gap-2.5 w-full max-w-[200px] items-start mx-0 sm:mx-auto">
               <h2 className="uppercase font-black text-lg sm:text-base mb-1">Quick Links</h2>
               {[
                 { label: "Home", href: "#home" },
                 { label: "About Us", href: "#why-us" },
                 { label: "Our Services", href: "#services" },
                 { label: "Why Choose Us", href: "#why-us" },
-                { label: "Get a Quote", onClick: handleQuoteScroll },
               ].map((link) => (
-                link.onClick ? (
-                  <button
-                    key={link.label}
-                    onClick={link.onClick}
-                    className="text-sm sm:text-base font-normal hover:text-[#7FFF00] transition-colors duration-200 text-left"
-                  >
-                    {link.label}
-                  </button>
-                ) : (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    onClick={(e) => handleSmoothScroll(e, link.href)}
-                    className="text-sm sm:text-base font-normal hover:text-[#7FFF00] transition-colors duration-200"
-                  >
-                    {link.label}
-                  </a>
-                )
+                <a
+                  key={link.label}
+                  href={link.href}
+                  onClick={(e) => handleSmoothScroll(e, link.href)}
+                  className="text-sm sm:text-base font-normal hover:text-[#7FFF00] transition-colors duration-200 text-left w-full"
+                >
+                  {link.label}
+                </a>
               ))}
+              <a
+                key="Get a Quote"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleQuoteScroll();
+                }}
+                className="text-sm sm:text-base font-normal hover:text-[#7FFF00] transition-colors duration-200 text-left w-full cursor-pointer"
+              >
+                Get a Quote
+              </a>
             </div>
 
             {/* Contact Information */}
