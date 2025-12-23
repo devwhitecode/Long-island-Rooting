@@ -377,7 +377,7 @@ function App() {
     }
   };
 
-  const handleQuoteSubmit = (event, options = {}) => {
+  const handleQuoteSubmit = async (event, options = {}) => {
     event.preventDefault();
     const { closeModal = false, formKey = "hero" } = options;
     const formElement = event.target;
@@ -390,15 +390,42 @@ function App() {
       formElement.reportValidity();
       return;
     }
-    setQuoteStatus((prev) => ({ ...prev, [formKey]: true }));
-    formElement.reset();
-    flashQuoteActive();
-    if (closeModal) {
-      setShowModalQuote(false);
+
+    const formData = new FormData(formElement);
+    const data = {
+      name: formData.get('name'),
+      phone: formData.get('phone'),
+      email: formData.get('email'),
+      message: formData.get('message'),
+      formType: formKey
+    };
+
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send email');
+      }
+
+      setQuoteStatus((prev) => ({ ...prev, [formKey]: true }));
+      formElement.reset();
+      flashQuoteActive();
+      if (closeModal) {
+        setShowModalQuote(false);
+      }
+    } catch (error) {
+      console.error('Error sending email:', error);
+      alert('There was an error sending your message. Please try again or contact us directly.');
     }
   };
 
-  const handleFooterSubmit = (event) => {
+  const handleFooterSubmit = async (event) => {
     event.preventDefault();
     const formElement = event.target;
     Array.from(formElement.elements).forEach((element) => {
@@ -410,9 +437,36 @@ function App() {
       formElement.reportValidity();
       return;
     }
-    setQuoteStatus((prev) => ({ ...prev, footer: true }));
-    formElement.reset();
-    flashQuoteActive();
+
+    const formData = new FormData(formElement);
+    const data = {
+      name: formData.get('name'),
+      phone: formData.get('phone'),
+      email: formData.get('email'),
+      message: formData.get('message'),
+      formType: 'footer'
+    };
+
+    try {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send email');
+      }
+
+      setQuoteStatus((prev) => ({ ...prev, footer: true }));
+      formElement.reset();
+      flashQuoteActive();
+    } catch (error) {
+      console.error('Error sending email:', error);
+      alert('There was an error sending your message. Please try again or contact us directly.');
+    }
   };
 
   const renderQuoteForm = (variant = "hero", options = {}) => {
@@ -456,6 +510,7 @@ function App() {
       </div>
       <input
         type="text"
+        name="name"
         placeholder="Full Name"
         className={inputClass}
         required
@@ -464,6 +519,7 @@ function App() {
       />
       <input
         type="tel"
+        name="phone"
         placeholder="Phone Number"
         className={inputClass}
         required
@@ -472,6 +528,7 @@ function App() {
       />
       <input
         type="email"
+        name="email"
         placeholder="Email"
         className={inputClass}
         required
@@ -479,6 +536,7 @@ function App() {
       />
       <textarea
         rows="4"
+        name="message"
         placeholder="Message"
         className={textareaClass}
         required
