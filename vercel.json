@@ -1,5 +1,1 @@
-{
-  "env": {
-    "RESEND_API_KEY": "@resend-api-key"
-  }
-}
+{}
