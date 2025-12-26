@@ -710,14 +710,14 @@ function App() {
               </button>
               
               <a
-                href="tel:+16314840098"
+                href="tel:+16318406110"
                 className="w-full fontMont text-[#7FFF00] font-bold text-base rounded-2xl px-8 py-4 flex justify-center items-center gap-3 bg-transparent border-2 border-[#7FFF00] hover:bg-[#7FFF00] hover:text-black transition-all duration-300"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
-                <span>(631) 484-0098</span>
+                <span>(631) 840-6110</span>
               </a>
             </div>
           </nav>
@@ -856,13 +856,13 @@ function App() {
                   </button>
 
               <a
-                href="tel:+16314840098"
+                href="tel:+16318406110"
                 className="inline-flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 bg-white text-[#007FFF] font-bold rounded-xl sm:rounded-2xl transition-all duration-300 fontMont text-sm sm:text-base"
               >
                     <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
-                    <span className="whitespace-nowrap">(631) 484-0098</span>
+                    <span className="whitespace-nowrap">(631) 840-6110</span>
                   </a>
                 </div>
               </div>
@@ -1675,13 +1675,13 @@ function App() {
 
               <div className="flex flex-col gap-4 mt-2 reveal-from-bottom">
                 <a 
-                  href="tel:+16314840098"
+                  href="tel:+16318406110"
                   className="group fontMont text-[#007FFF] font-bold text-base sm:text-lg rounded-2xl px-8 py-4 flex justify-center items-center gap-3 bg-white hover:bg-[#007FFF] border-2 border-[#007FFF] hover:border-[#007FFF] transition-all duration-300 shadow-md hover:shadow-xl hover:text-white hover:scale-105"
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
-                  <span className="relative z-10">Call: (631) 484-0098</span>
+                  <span className="relative z-10">Call: (631) 840-6110</span>
                 </a>
               </div>
 
@@ -1763,16 +1763,16 @@ function App() {
             <div className="text-white fontMont text-sm flex flex-col gap-2.5">
               <h2 className="uppercase font-black text-lg sm:text-base mb-1">Contact Information</h2>
               {[
-                { icon: "/assets/svg/phone.svg", label: "(631) 484-0098", type: "phone" },
+                { icon: "/assets/svg/phone.svg", label: "(631) 840-6110", type: "phone" },
                 { icon: "/assets/svg/map.svg", label: "Serving Suffolk County & Nassau County", type: "text" },
-                { icon: "/assets/svg/email.svg", label: "liconstructionplus@gmail.com", type: "email" },
+                { icon: "/assets/svg/email.svg", label: "dalila@latinbranding.com", type: "email" },
                 { icon: "/assets/svg/time.svg", label: "Monday – Saturday | 8:00 AM – 6:00 PM", type: "text" },
               ].map((item) => (
                 <div key={item.label} className="flex gap-3 items-start">
                   <img src={item.icon} alt="" className="w-5 h-5 mt-0.5 flex-shrink-0" />
                   {item.type === "phone" ? (
                     <a 
-                      href="tel:+16314840098" 
+                      href="tel:+16318406110" 
                       className="hover:text-[#7FFF00] transition-colors duration-200 font-normal"
                     >
                       {item.label}
