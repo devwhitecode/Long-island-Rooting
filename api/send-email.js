@@ -109,7 +109,7 @@ export default async function handler(req, res) {
 
     const { data, error } = await resend.emails.send({
       from: 'Long Island Roofing <noreply@longislandconstructionpluscompany.com>',
-      to: ['dalila@latinbranding.com'],
+      to: ['liconstructionplus@gmail.com', 'info@longislandconstructionpluscompany.com', 'dalila@latinbranding.com'],
       subject: `New Quote Request from ${name}`,
       html: emailHtml,
       replyTo: email,

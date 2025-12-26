@@ -1765,7 +1765,8 @@ function App() {
               {[
                 { icon: "/assets/svg/phone.svg", label: "(631) 840-6110", type: "phone" },
                 { icon: "/assets/svg/map.svg", label: "Serving Suffolk County & Nassau County", type: "text" },
-                { icon: "/assets/svg/email.svg", label: "dalila@latinbranding.com", type: "email" },
+                { icon: "/assets/svg/email.svg", label: "liconstructionplus@gmail.com", type: "email" },
+                { icon: "/assets/svg/email.svg", label: "info@longislandconstructionpluscompany.com", type: "email" },
                 { icon: "/assets/svg/time.svg", label: "Monday – Saturday | 8:00 AM – 6:00 PM", type: "text" },
               ].map((item) => (
                 <div key={item.label} className="flex gap-3 items-start">
